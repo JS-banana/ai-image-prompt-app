@@ -1,0 +1,73 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Prompt {
+  id         String             @id @default(cuid())
+  title      String             @unique
+  body       String
+  tags       String?
+  variables  String?
+  version    Int                @default(1)
+  author     String?
+  link       String?
+  preview    String?
+  category   String?
+  mode       String?
+  createdAt  DateTime           @default(now())
+  updatedAt  DateTime           @updatedAt
+  versions   PromptVersionLog[]
+  requests   GenerationRequest[]
+}
+
+model PromptVersionLog {
+  id          String   @id @default(cuid())
+  promptId    String
+  prompt      Prompt   @relation(fields: [promptId], references: [id])
+  modelId     String
+  modelParams String?
+  sampleUrl   String?
+  note        String?
+  createdAt   DateTime @default(now())
+}
+
+model ModelConfig {
+  id         String   @id @default(cuid())
+  provider   String
+  modelName  String
+  apiKeyRef  String?
+  defaults   String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model GenerationRequest {
+  id             String             @id @default(cuid())
+  promptId       String?
+  prompt         Prompt?            @relation(fields: [promptId], references: [id])
+  models         String
+  paramsOverride String?
+  createdAt      DateTime           @default(now())
+  results        GenerationResult[]
+}
+
+model GenerationResult {
+  id         String            @id @default(cuid())
+  requestId  String
+  request    GenerationRequest @relation(fields: [requestId], references: [id])
+  modelId    String
+  status     String            @default("PENDING")
+  imageUrl   String?
+  paramsUsed String?
+  elapsedMs  Int?
+  error      String?
+  createdAt  DateTime          @default(now())
+}
