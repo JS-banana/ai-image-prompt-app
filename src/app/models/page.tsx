@@ -1,6 +1,9 @@
 import { createModelConfigAction } from "@/app/models/actions";
 import { getModelConfigs } from "@/lib/data/models";
 
+const formatModelName = (name: string) =>
+  name.replace(/[_-]+/g, " ").trim() || name;
+
 export default async function ModelsPage() {
   const models = await getModelConfigs();
 
@@ -35,13 +38,17 @@ export default async function ModelsPage() {
                 className="flex flex-col gap-3 rounded-xl border border-slate-200 bg-slate-50 p-4"
               >
                 <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-xs uppercase tracking-widest text-slate-500">
-                      {model.provider}
-                    </p>
-                    <h3 className="text-base font-semibold text-slate-900">
-                      {model.modelName}
-                    </h3>
+                  <div className="flex flex-col gap-1">
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-base font-semibold text-slate-900">
+                        {formatModelName(model.modelName)}
+                      </h3>
+                      {model.provider ? (
+                        <span className="rounded-full bg-slate-100 px-2 py-1 text-[11px] font-semibold text-slate-700">
+                          {model.provider}
+                        </span>
+                      ) : null}
+                    </div>
                   </div>
                   <span className="rounded-full bg-emerald-100 px-2 py-1 text-[11px] font-semibold text-emerald-700">
                     已登记

@@ -5,6 +5,7 @@ export type ModelConfigItem = {
   provider: string;
   modelName: string;
   resolution?: string;
+  sizePresets?: string[];
   defaults?: Record<string, unknown>;
   createdAt: string;
 };
@@ -24,15 +25,34 @@ export const getModelConfigs = async (): Promise<ModelConfigItem[]> => {
     }
   };
 
-  return list.map((item) => ({
-    id: item.id,
-    provider: item.provider,
-    modelName: item.modelName,
-    resolution:
-      parseJson(item.defaults)?.resolution as string | undefined,
-    defaults: parseJson(item.defaults),
-    createdAt: item.createdAt.toISOString().slice(0, 10),
-  }));
+  const parseSizePresets = (defaults?: Record<string, unknown>) => {
+    const raw = (defaults as { sizePresets?: unknown } | undefined)
+      ?.sizePresets;
+    if (!Array.isArray(raw)) return undefined;
+    const cleaned = raw
+      .map((item) => (typeof item === "string" ? item.trim() : ""))
+      .filter(Boolean);
+    return cleaned.length ? cleaned : undefined;
+  };
+
+  return list.map((item) => {
+    const defaults = parseJson(item.defaults);
+    const resolution =
+      typeof (defaults as { resolution?: unknown } | undefined)?.resolution ===
+      "string"
+        ? (defaults as { resolution: string }).resolution
+        : undefined;
+
+    return {
+      id: item.id,
+      provider: item.provider,
+      modelName: item.modelName,
+      resolution,
+      sizePresets: parseSizePresets(defaults),
+      defaults,
+      createdAt: item.createdAt.toISOString().slice(0, 10),
+    };
+  });
 };
 
 export const createModelConfig = async (input: {
