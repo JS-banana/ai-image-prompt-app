@@ -71,14 +71,13 @@ export default function Home() {
           ))}
         </section>
 
-        <section className="grid gap-4 rounded-2xl border border-amber-200 bg-amber-50 p-6 text-slate-800">
-          <h2 className="text-lg font-semibold">当前限制与下一步</h2>
+        <section className="grid gap-4 rounded-2xl border border-slate-200 bg-white p-6 text-slate-800">
+          <h2 className="text-lg font-semibold">产品亮点</h2>
           <ul className="space-y-2 text-sm leading-relaxed">
-            <li>• 还未接上真实模型与 Server Actions，先用假数据骨架演示。</li>
-            <li>
-              • 本地使用 SQLite + Prisma（libsql 适配），生产可切换 Turso/托管库。
-            </li>
-            <li>• 即将补充导入导出、历史查询与作业并发/超时策略。</li>
+            <li>• 提示词工作台：提示库、模型、分辨率入口聚合，生成后自动滚动到预览。</li>
+            <li>• Seedream 4.5 深度接入：分辨率校验（≥2K），预设 2K/4K，一键下载与历史留存。</li>
+            <li>• 本地历史与快速回填：最近提示词与生成记录可预览、下载、复用。</li>
+            <li>• 轻量栈：Next.js 16 + Prisma/SQLite，支持 Turso/libsql，前后端同构易扩展。</li>
           </ul>
         </section>
       </main>

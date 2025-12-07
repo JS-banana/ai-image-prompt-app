@@ -94,6 +94,15 @@ type GenerationResult = {
   raw: unknown;
 };
 
+type HistoryItem = {
+  id: string;
+  prompt: string;
+  modelLabel: string;
+  size: string;
+  imageUrl: string | null;
+  createdAt: number;
+};
+
 export function GenerateClient({ prompts, models }: Props) {
   const defaultSeedream = models.find((m) => isSeedreamModel(m));
   const [, setSelectedPromptId] = useState<string | null>(null);
@@ -115,6 +124,10 @@ export function GenerateClient({ prompts, models }: Props) {
   const [promptSearch, setPromptSearch] = useState("");
   const [customSize, setCustomSize] = useState("");
   const [history, setHistory] = useState<string[]>([]);
+  const [imageHistory, setImageHistory] = useState<HistoryItem[]>([]);
+  const [historyLoaded, setHistoryLoaded] = useState(false);
+  const [expandedPrompt, setExpandedPrompt] = useState<string | null>(null);
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
   const previewRef = useRef<HTMLDivElement | null>(null);
 
   const modelsById = useMemo(
@@ -188,6 +201,12 @@ export function GenerateClient({ prompts, models }: Props) {
     setResult(null);
 
     try {
+      const primarySeedream = modelsById.get(seedreamModels[0] ?? "");
+      const modelToCall =
+        primarySeedream?.modelName?.includes("doubao")
+          ? primarySeedream.modelName
+          : SEEDREAM_MODEL_LABEL;
+
       const resp = await fetch("/api/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -195,6 +214,8 @@ export function GenerateClient({ prompts, models }: Props) {
           prompt: trimmed,
           modelIds: seedreamModels,
           size,
+          image: imageSource ? [imageSource] : undefined,
+          model: modelToCall,
         }),
       });
 
@@ -214,7 +235,7 @@ export function GenerateClient({ prompts, models }: Props) {
         throw new Error(data?.error || `生成失败（HTTP ${resp.status}）`);
       }
 
-      setResult({
+      const nextResult = {
         modelLabel:
           modelLookup.get(seedreamModels[0] ?? "") ??
           (activeSeedreamModel
@@ -222,6 +243,23 @@ export function GenerateClient({ prompts, models }: Props) {
             : SEEDREAM_MODEL_LABEL),
         imageUrl: data.imageUrl ?? null,
         raw: data.raw,
+      };
+
+      setResult(nextResult);
+      const historyItem: HistoryItem = {
+        id: `${Date.now()}`,
+        prompt: trimmed,
+        modelLabel: nextResult.modelLabel,
+        size,
+        imageUrl: nextResult.imageUrl,
+        createdAt: Date.now(),
+      };
+      setImageHistory((prev) => {
+        const next = [historyItem, ...prev].slice(0, 12);
+        if (typeof window !== "undefined") {
+          localStorage.setItem("seedream-history", JSON.stringify(next));
+        }
+        return next;
       });
       setHistory((prev) => {
         const next = [trimmed, ...prev];
@@ -272,8 +310,65 @@ export function GenerateClient({ prompts, models }: Props) {
     setError(null);
   };
 
+  const [, setUploading] = useState(false);
+  const [uploadPreview, setUploadPreview] = useState<string | null>(null);
+  const [imageSource, setImageSource] = useState<string | null>(null); // dataURL 或 url
+
+  const handleUpload = async (file: File) => {
+    if (!file) return;
+    const maxSizeMB = 5;
+    if (file.size > maxSizeMB * 1024 * 1024) {
+      setError(`图片过大，请小于 ${maxSizeMB}MB`);
+      return;
+    }
+    setError(null);
+    setUploading(true);
+    try {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const result = typeof reader.result === "string" ? reader.result : null;
+        if (result) {
+          setUploadPreview(result);
+          setImageSource(result);
+        }
+        setUploading(false);
+      };
+      reader.onerror = () => {
+        setError("图片读取失败");
+        setUploading(false);
+      };
+      reader.readAsDataURL(file);
+    } catch {
+      setError("图片读取失败");
+      setUploading(false);
+    }
+  };
+
+  const handleEditFromHistory = (item: HistoryItem) => {
+    setPromptText(item.prompt);
+    setImageSource(item.imageUrl ?? null);
+    setUploadPreview(item.imageUrl ?? null);
+  };
+
+  useEffect(() => {
+    try {
+      const cached = localStorage.getItem("seedream-history");
+      if (cached) {
+        const parsed = JSON.parse(cached) as HistoryItem[];
+        if (Array.isArray(parsed)) {
+          setImageHistory(parsed.slice(0, 12));
+        }
+      }
+    } catch {
+      /* ignore */
+    } finally {
+      setHistoryLoaded(true);
+    }
+  }, []);
+
   return (
-    <div className="space-y-6">
+    <>
+      <div className="space-y-6">
       <header className="space-y-3">
         <p className="text-xs font-semibold uppercase tracking-widest text-slate-500">
           Multi-Model Run
@@ -290,33 +385,68 @@ export function GenerateClient({ prompts, models }: Props) {
             <div className="space-y-2">
               <label className="text-sm font-semibold text-slate-800">提示词工作台</label>
               <div className="relative rounded-2xl border border-slate-200 bg-slate-50/60 p-4 shadow-inner">
-                <div className="flex items-center justify-between pb-3">
-                  <span className="text-xs font-semibold uppercase tracking-widest text-slate-500">
-                    Prompt
-                  </span>
-                  <div className="flex items-center gap-2 text-xs text-slate-600">
-                    <button
-                      type="button"
-                      onClick={() => setPromptText("")}
-                      className="rounded-full border border-slate-200 px-3 py-1 font-semibold hover:bg-white"
-                    >
-                      清空
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => navigator.clipboard.writeText(promptText || "")}
-                      className="rounded-full border border-slate-200 px-3 py-1 font-semibold hover:bg-white"
-                    >
-                      复制
-                    </button>
+                  <div className="flex items-center justify-between pb-3">
+                    <span className="text-xs font-semibold uppercase tracking-widest text-slate-500">
+                      Prompt
+                    </span>
+                    <div className="flex items-center gap-2 text-xs text-slate-600">
+                      <button
+                        type="button"
+                        onClick={() => setPromptText("")}
+                        className="rounded-full border border-slate-200 px-3 py-1 font-semibold hover:bg-white"
+                      >
+                        清空
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => navigator.clipboard.writeText(promptText || "")}
+                        className="rounded-full border border-slate-200 px-3 py-1 font-semibold hover:bg-white"
+                      >
+                        复制
+                      </button>
+                      <label className="flex cursor-pointer items-center gap-1 rounded-full border border-slate-200 px-3 py-1 font-semibold hover:bg-white">
+                        上传
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) handleUpload(file);
+                          }}
+                        />
+                      </label>
+                    </div>
                   </div>
-                </div>
                 <textarea
                   value={promptText}
                   onChange={(e) => setPromptText(e.target.value)}
                   className="h-56 w-full resize-none rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none ring-1 ring-transparent transition focus:border-slate-300 focus:ring-slate-200"
                   placeholder="可直接输入，或通过右下角图标从提示词库/模型/分辨率入口快速选择"
                 />
+                {uploadPreview ? (
+                  <div className="mt-2 flex items-center gap-2 rounded-lg border border-slate-200 bg-white p-2">
+                    <span className="text-[11px] text-slate-600">已选图片</span>
+                    <div className="relative h-14 w-14 overflow-hidden rounded-md bg-slate-100">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={uploadPreview}
+                        alt="上传预览"
+                        className="h-full w-full object-cover"
+                      />
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setUploadPreview(null);
+                        setImageSource(null);
+                      }}
+                      className="text-xs text-slate-500 underline"
+                    >
+                      移除
+                    </button>
+                  </div>
+                ) : null}
                 <div className="mt-2 flex items-center justify-between">
                   <div className="text-[11px] text-slate-500">
                     {promptText.length} 字 · Seedream 4.5 · 分辨率 {size}
@@ -547,6 +677,17 @@ export function GenerateClient({ prompts, models }: Props) {
                         未返回图片链接
                       </div>
                     )}
+                    {result.imageUrl ? (
+                      <div className="mt-2 flex items-center gap-3">
+                        <a
+                          href={result.imageUrl}
+                          download="seedream.png"
+                          className="rounded-full border border-slate-200 px-3 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-100"
+                        >
+                          下载
+                        </a>
+                      </div>
+                    ) : null}
                   </div>
                 </article>
               ) : (
@@ -555,9 +696,159 @@ export function GenerateClient({ prompts, models }: Props) {
                 </div>
               )}
             </div>
+
+            <div className="space-y-3 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+              <div className="flex items-center justify-between">
+                <h2 className="text-sm font-semibold text-slate-900">生成历史</h2>
+                <span className="text-[11px] text-slate-500">最多保存 12 条（本地）</span>
+              </div>
+              {!historyLoaded ? (
+                <div className="rounded-lg border border-dashed border-slate-200 bg-slate-50 p-4 text-xs text-slate-600">
+                  加载中...
+                </div>
+              ) : imageHistory.length === 0 ? (
+                <div className="rounded-lg border border-dashed border-slate-200 bg-slate-50 p-4 text-xs text-slate-600">
+                  暂无历史记录，生成后自动保存。
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {imageHistory.map((item) => (
+                    <div
+                      key={item.id}
+                      className="flex flex-col gap-3 rounded-lg border border-slate-200 bg-slate-50 p-3 sm:flex-row sm:items-center"
+                    >
+                      <div className="relative h-20 w-16 overflow-hidden rounded-md bg-white">
+                        {item.imageUrl ? (
+                          <Image
+                            src={item.imageUrl}
+                            alt="历史记录"
+                            fill
+                            className="object-cover"
+                            sizes="120px"
+                          />
+                        ) : (
+                          <div className="flex h-full w-full items-center justify-center text-xs text-slate-500">
+                            无图
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="min-w-0 flex-1 space-y-1 text-xs text-slate-600">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="font-semibold text-slate-800">{item.modelLabel}</span>
+                          <span>{item.size}</span>
+                          <span>{new Date(item.createdAt).toLocaleTimeString()}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-[11px] text-slate-500">prompt:</span>
+                          <span
+                            className="max-w-[280px] truncate text-[11px] text-slate-700 sm:max-w-[360px]"
+                            title={item.prompt}
+                          >
+                            {item.prompt}
+                          </span>
+                          <button
+                            type="button"
+                            className="text-[11px] text-blue-600 underline"
+                            onClick={() => setExpandedPrompt(item.prompt)}
+                          >
+                            展开
+                          </button>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2 sm:ml-auto">
+                        {item.imageUrl ? (
+                          <>
+                            <a
+                              href={item.imageUrl}
+                              download={`seedream-${item.id}.png`}
+                              className="rounded-full border border-slate-200 px-3 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-100"
+                            >
+                              下载
+                            </a>
+                            <button
+                              type="button"
+                              onClick={() => setPreviewImage(item.imageUrl!)}
+                              className="rounded-full border border-slate-200 px-3 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-100"
+                            >
+                              查看
+                            </button>
+                          </>
+                        ) : null}
+                        <button
+                          type="button"
+                          onClick={() => handleEditFromHistory(item)}
+                          className="rounded-full border border-slate-200 px-3 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-100"
+                        >
+                          编辑
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </section>
     </div>
+
+    {expandedPrompt ? (
+      <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/40 p-4">
+        <div className="max-w-2xl rounded-xl bg-white p-6 shadow-2xl">
+          <div className="mb-4 flex items-center justify-between">
+            <h3 className="text-base font-semibold text-slate-900">完整提示词</h3>
+            <button
+              type="button"
+              onClick={() => setExpandedPrompt(null)}
+              className="text-sm text-slate-500 hover:text-slate-800"
+            >
+              关闭
+            </button>
+          </div>
+          <div className="max-h-[60vh] space-y-3 overflow-y-auto whitespace-pre-wrap break-words text-sm text-slate-800">
+            <p>{expandedPrompt}</p>
+            <button
+              type="button"
+              onClick={() => {
+                navigator.clipboard.writeText(expandedPrompt ?? "");
+              }}
+              className="rounded-full border border-slate-200 px-3 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-100"
+            >
+              复制提示词
+            </button>
+          </div>
+        </div>
+      </div>
+    ) : null}
+
+    {previewImage ? (
+      <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/60 p-4">
+        <div className="relative w-full max-w-3xl overflow-hidden rounded-2xl bg-white shadow-2xl">
+          <button
+            type="button"
+            onClick={() => setPreviewImage(null)}
+            className="absolute right-3 top-3 z-10 rounded-full bg-black/60 px-3 py-1 text-xs font-semibold text-white hover:bg-black/80"
+          >
+            关闭
+          </button>
+          <div
+            className="relative w-full"
+            style={{ aspectRatio: "3 / 4", maxHeight: "70vh" }}
+          >
+            <Image
+              src={previewImage}
+              alt="预览"
+              fill
+              className="object-contain bg-black"
+              sizes="(max-width: 768px) 100vw, 800px"
+              priority
+            />
+          </div>
+        </div>
+      </div>
+    ) : null}
+    </>
   );
 }

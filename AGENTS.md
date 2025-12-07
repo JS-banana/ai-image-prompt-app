@@ -1,27 +1,43 @@
-# AI-Image-APP
+# AI-Image-APP · AGENT 摘要（更新：2025-12-07）
 
-## 项目介绍
+## 项目概览
 
-- 一个为了方便自己使用的 AI 生图和提示词管理平台。
-- 目标：持续打磨生图平台架构与体验，追求极致的好用、易用。
+- 个人向 AI 生图与提示词管理平台（Next.js 16 + Prisma/SQLite）。
+- 当前仅接入 Seedream 4.5（火山 Ark），聚焦“提示词工作台 + 快速生成 + 预览”体验。
 
-## 助手&工具
+## 关键路径
 
-- 产品需求讨论：基于 `agents/product.md` 与我沟通功能与范围。
-- 提示词/角色资产：已集中于 `agents/` 目录，包含产品基准与各类生图/前端/组件助手（如 ai-image-prompt-optimizer、qwen-image-edit-assistant 等），按需引用具体文件。
-- 技术与方案沉淀：正式定稿的设计/架构/数据方案请写入 `docs/` 下的 Markdown（当前基线：`docs/design.md`），在讨论时引用对应 path，避免引入无关上下文。
+- 生成页：`src/app/generate/page.tsx`, `src/app/generate/client.tsx`
+- API：`src/app/api/generate/route.ts`（Seedream 4.5 文生图）
+- 数据：`src/lib/data/models.ts`, `src/lib/data/prompts.ts`
+- 设计/方案：`docs/design.md`；任务规划：`docs/plan.md`
 
-## 技术架构
+## 当前基线与交互
 
-- nextjs v16
-- prisma+sqlite
-- shadcn/ui+tailwindcss
+- 单卡提示词工作台：文本域 + 右下入口（提示库/模型/分辨率），右侧预览 sticky，生成后自动滚动，预览比例 4:5。
+- 模型：仅保留 Seedream 4.5；分辨率预设 2K/4K，支持自定义且校验 ≥3,686,400 像素。
+- 提示词：支持搜索/选择提示词库并写入；记录最近 5 条历史。
+- 错误处理：前端先校验 content-type，避免 404/HTML 导致 JSON 解析报错；错误条状提示。
 
-## TODO
+## 环境与配置
 
-具体的任务规划，写在这个 [文档](docs/plan.md) 中了
+- 必需环境变量：`volcengine_api_key`（兼容 `SEEDREAM_API_KEY`）。
+- 本地数据库：Prisma SQLite（`DATABASE_URL` 默认 dev.db）。
 
-要求如下：
+## 运行与验证
 
-- 仔细阅读，梳理清楚任务梳理，做好任务优先级管理，然后进行任务规划
-- 任务规划完成后，主动依次开始执行，保证必要的测试和验证，优先把任务先完成，然后继续打磨细节
+- 开发：`pnpm dev`
+- Lint：`pnpm lint`（最新执行通过）
+- 种子/导入：`pnpm db:seed`，`pnpm db:import:banana`
+
+## 约束与注意
+
+- 目前仅 Seedream 接口可用，其它模型尚未接入；UI 以单模型模式呈现。
+- 分辨率低于 3,686,400 像素会被前端拦截；若自定义需符合格式如 `2048x2048`。
+- 设计主题暂保留浅色；如要切换深色/主题，请另行规划。
+
+## 待办/下一步建议
+
+- 可加浮动预览 Dock（桌面）/底部抽屉（移动）以对齐 raphael.app 的沉浸感。
+- 若启用多模型，需要扩展服务端路由和 UI 模式切换，并完善参数映射/并发控制。
+- 考虑将提示库 Popover 支持标签筛选与收藏。
