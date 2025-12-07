@@ -1,45 +1,58 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# AI-Image-APP
 
-## Getting Started
+多模型生图与提示词管理工作台（Next.js 16 + Prisma/SQLite）。
 
-First, install deps with pnpm (default package manager):
+## 功能概览
 
-```bash
-pnpm install
+- 提示词工作台：提示库/模型/分辨率聚合，生成后自动滚动到预览。
+- Seedream 4.5 接入：文生图 & 图生图（上传图片），默认 2K/4K，校验像素下限。
+- 历史管理：自动保存最近 12 条生成记录，可查看大图、下载、编辑回填。
+
+## 环境配置
+
+1. 复制 `.env.example` 为 `.env.local` 并填写：
+
+```
+DATABASE_URL="file:./prisma/dev.db"
+volcengine_api_key="YOUR_ARK_API_KEY"
+# 可选端点：SEEDREAM4_ENDPOINT / DEEPSEEK_ENDPOINT
 ```
 
-Run the development server:
+2. 运行前安装依赖：`pnpm install`
+
+## 快速开始
 
 ```bash
-pnpm dev
+pnpm dev        # 启动开发，默认 http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-Quality gates:
+## 常用脚本
 
 ```bash
-pnpm lint        # ESLint
-pnpm lint:fix    # ESLint --fix
-pnpm format      # Prettier write
-pnpm typecheck   # Next.js type check
+pnpm lint            # ESLint
+pnpm lint:fix        # ESLint --fix
+pnpm format          # Prettier write
+pnpm typecheck       # TS 检查
+pnpm db:seed         # 写入示例 Prompt/Model
+pnpm db:import:banana  # 导入 banana prompts
 ```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 技术栈
 
-## Learn More
+- Next.js 16 (App Router)
+- React 19
+- Prisma + SQLite（可切 Turso/libsql）
+- pnpm 10
 
-To learn more about Next.js, take a look at the following resources:
+## 目录指引
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- 生成页：`src/app/generate/page.tsx`, `src/app/generate/client.tsx`
+- API：`src/app/api/generate/route.ts`
+- 数据：`src/lib/data/models.ts`, `src/lib/data/prompts.ts`
+- 设计/方案：`docs/design.md`
+- 计划：`docs/plan.md`
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 说明
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- 未上传图片时为纯文生图；上传后自动带图生图参数。
+- 历史记录保存在浏览器 localStorage（最多 12 条）。若需持久化，请扩展后端存储。
