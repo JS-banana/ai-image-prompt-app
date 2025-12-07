@@ -77,10 +77,16 @@ export const createPrompt = async (input: {
   });
 };
 
-export const getPromptOptions = async () => {
+export type PromptOption = {
+  id: string;
+  title: string;
+  body: string;
+};
+
+export const getPromptOptions = async (): Promise<PromptOption[]> => {
   const prompts = await prisma.prompt.findMany({
     orderBy: { updatedAt: "desc" },
-    select: { id: true, title: true },
+    select: { id: true, title: true, body: true },
   });
   return prompts;
 };

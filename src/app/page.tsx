@@ -8,7 +8,7 @@ const cards = [
   },
   {
     title: "模型配置",
-    body: "快速接入 Google nano banana、Dreamseed4.0、Qwen-image-edit 等多模型。",
+    body: "快速接入 nano banana、Dreamseed4.0、Qwen-image-edit 等多模型。",
     href: "/models",
   },
   {
