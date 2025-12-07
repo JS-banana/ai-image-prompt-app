@@ -52,8 +52,7 @@ export type SeedreamImageParams = {
 };
 
 export async function generateSeedreamImage(params: SeedreamImageParams) {
-  const apiKey =
-    process.env.volcengine_api_key ?? process.env.SEEDREAM_API_KEY ?? "";
+  const apiKey = process.env.volcengine_api_key ?? "";
 
   const payload = {
     model: params.model ?? DEFAULT_IMAGE_MODEL,
@@ -85,8 +84,7 @@ export type DeepseekChatParams = {
 };
 
 export async function runDeepseekChat(params: DeepseekChatParams) {
-  const apiKey =
-    process.env.volcengine_api_key ?? process.env.SEEDREAM_API_KEY ?? "";
+  const apiKey = process.env.volcengine_api_key ?? "";
   const endpoint = params.endpoint ?? DEFAULT_CHAT_ENDPOINT;
 
   const payload = {
