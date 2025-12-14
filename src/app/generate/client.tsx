@@ -103,6 +103,13 @@ type HistoryItem = {
   createdAt: number;
 };
 
+type ApiKeyStatus = {
+  provider: string;
+  serverKey: boolean;
+  userKey: boolean;
+  activeSource: "user" | "server" | "none";
+};
+
 export function GenerateClient({ prompts, models }: Props) {
   const defaultSeedream = models.find((m) => isSeedreamModel(m));
   const [, setSelectedPromptId] = useState<string | null>(null);
@@ -121,6 +128,11 @@ export function GenerateClient({ prompts, models }: Props) {
   const [showModelMenu, setShowModelMenu] = useState(false);
   const [showSizeMenu, setShowSizeMenu] = useState(false);
   const [showPromptMenu, setShowPromptMenu] = useState(false);
+  const [showApiKeyMenu, setShowApiKeyMenu] = useState(false);
+  const [apiKeyStatus, setApiKeyStatus] = useState<ApiKeyStatus | null>(null);
+  const [apiKeyDraft, setApiKeyDraft] = useState("");
+  const [apiKeyVisible, setApiKeyVisible] = useState(false);
+  const [apiKeySaving, setApiKeySaving] = useState(false);
   const [promptSearch, setPromptSearch] = useState("");
   const [customSize, setCustomSize] = useState("");
   const [history, setHistory] = useState<string[]>([]);
@@ -169,12 +181,107 @@ export function GenerateClient({ prompts, models }: Props) {
     return SEEDREAM_SIZES;
   }, [sizeTargetModel]);
 
+  const apiKeySourceLabel =
+    apiKeyStatus?.activeSource === "user"
+      ? "浏览器"
+      : apiKeyStatus?.activeSource === "server"
+        ? "服务端"
+        : apiKeyStatus?.activeSource === "none"
+          ? "未配置"
+          : "未知";
+
   useEffect(() => {
     if (!sizeOptions.length) return;
     if (!sizeOptions.includes(size)) {
       setSize(sizeOptions[0]);
     }
   }, [sizeOptions, size]);
+
+  const refreshApiKeyStatus = async () => {
+    try {
+      const resp = await fetch("/api/apikey", { cache: "no-store" });
+      const data = (await resp.json().catch(() => null)) as ApiKeyStatus | null;
+      if (!resp.ok || !data) return;
+      setApiKeyStatus(data);
+    } catch {
+      /* ignore */
+    }
+  };
+
+  useEffect(() => {
+    void refreshApiKeyStatus();
+  }, []);
+
+  const handleSaveApiKey = async () => {
+    const trimmed = apiKeyDraft.trim();
+    if (!trimmed) {
+      setError("请先粘贴 Ark API Key");
+      setShowApiKeyMenu(true);
+      return;
+    }
+
+    setApiKeySaving(true);
+    setError(null);
+    try {
+      const resp = await fetch("/api/apikey", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ apiKey: trimmed }),
+      });
+      const data = (await resp.json().catch(() => null)) as
+        | (ApiKeyStatus & { ok?: boolean; error?: string })
+        | null;
+
+      if (!resp.ok) {
+        throw new Error(data?.error || `保存失败（HTTP ${resp.status}）`);
+      }
+
+      if (data) {
+        setApiKeyStatus(data);
+      } else {
+        await refreshApiKeyStatus();
+      }
+
+      setApiKeyDraft("");
+      setApiKeyVisible(false);
+      setShowApiKeyMenu(false);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      setError(message);
+      setShowApiKeyMenu(true);
+    } finally {
+      setApiKeySaving(false);
+    }
+  };
+
+  const handleClearApiKey = async () => {
+    setApiKeySaving(true);
+    setError(null);
+    try {
+      const resp = await fetch("/api/apikey", { method: "DELETE" });
+      const data = (await resp.json().catch(() => null)) as
+        | (ApiKeyStatus & { ok?: boolean; error?: string })
+        | null;
+
+      if (!resp.ok) {
+        throw new Error(data?.error || `清除失败（HTTP ${resp.status}）`);
+      }
+
+      if (data) {
+        setApiKeyStatus(data);
+      } else {
+        await refreshApiKeyStatus();
+      }
+
+      setApiKeyDraft("");
+      setApiKeyVisible(false);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      setError(message);
+    } finally {
+      setApiKeySaving(false);
+    }
+  };
 
   const handleGenerate = async () => {
     const trimmed = promptText.trim();
@@ -271,6 +378,13 @@ export function GenerateClient({ prompts, models }: Props) {
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
       setError(message);
+      if (message.includes("缺少 Ark API Key")) {
+        setShowPromptMenu(false);
+        setShowModelMenu(false);
+        setShowSizeMenu(false);
+        setShowApiKeyMenu(true);
+      }
+      void refreshApiKeyStatus();
     } finally {
       setLoading(false);
     }
@@ -449,29 +563,58 @@ export function GenerateClient({ prompts, models }: Props) {
                 ) : null}
                 <div className="mt-2 flex items-center justify-between">
                   <div className="text-[11px] text-slate-500">
-                    {promptText.length} 字 · Seedream 4.5 · 分辨率 {size}
+                    {promptText.length} 字 · Seedream 4.5 · 分辨率 {size} · Key{" "}
+                    {apiKeySourceLabel}
                   </div>
                   <div className="flex items-center gap-2">
                     <button
                       type="button"
-                      onClick={() => setShowPromptMenu((v) => !v)}
+                      onClick={() => {
+                        setShowPromptMenu((v) => !v);
+                        setShowModelMenu(false);
+                        setShowSizeMenu(false);
+                        setShowApiKeyMenu(false);
+                      }}
                       className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-700 shadow-sm hover:border-slate-300"
                     >
                       📚 提示库
                     </button>
                     <button
                       type="button"
-                      onClick={() => setShowModelMenu((v) => !v)}
+                      onClick={() => {
+                        setShowModelMenu((v) => !v);
+                        setShowPromptMenu(false);
+                        setShowSizeMenu(false);
+                        setShowApiKeyMenu(false);
+                      }}
                       className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-700 shadow-sm hover:border-slate-300"
                     >
                       🖥️ 模型
                     </button>
                     <button
                       type="button"
-                      onClick={() => setShowSizeMenu((v) => !v)}
+                      onClick={() => {
+                        setShowSizeMenu((v) => !v);
+                        setShowPromptMenu(false);
+                        setShowModelMenu(false);
+                        setShowApiKeyMenu(false);
+                      }}
                       className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-700 shadow-sm hover:border-slate-300"
                     >
                       📐 分辨率
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowApiKeyMenu((v) => !v);
+                        setShowPromptMenu(false);
+                        setShowModelMenu(false);
+                        setShowSizeMenu(false);
+                        void refreshApiKeyStatus();
+                      }}
+                      className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-700 shadow-sm hover:border-slate-300"
+                    >
+                      🔑 API Key
                     </button>
                   </div>
                 </div>
@@ -599,6 +742,85 @@ export function GenerateClient({ prompts, models }: Props) {
                         使用自定义
                       </button>
                       <p>需 ≥ 3,686,400 像素（约 2K 起）。</p>
+                    </div>
+                  </div>
+                ) : null}
+
+                {showApiKeyMenu ? (
+                  <div className="absolute bottom-16 right-3 z-20 w-80 rounded-xl border border-slate-200 bg-white p-3 shadow-lg">
+                    <div className="mb-2 flex items-center justify-between text-sm font-semibold text-slate-800">
+                      API Key（火山 Ark）
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowApiKeyMenu(false);
+                          setApiKeyVisible(false);
+                        }}
+                        className="text-xs text-slate-500"
+                      >
+                        关闭
+                      </button>
+                    </div>
+                    <div className="space-y-2 text-xs text-slate-600">
+                      <div className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
+                        当前来源：{apiKeySourceLabel}
+                        {apiKeyStatus?.activeSource === "user"
+                          ? "（仅本浏览器）"
+                          : apiKeyStatus?.activeSource === "server"
+                            ? "（部署环境变量）"
+                            : ""}
+                      </div>
+
+                      <div className="space-y-1">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[11px] font-semibold uppercase tracking-widest text-slate-500">
+                            Volcengine Ark
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => setApiKeyVisible((v) => !v)}
+                            className="text-[11px] text-slate-500 underline"
+                          >
+                            {apiKeyVisible ? "隐藏" : "显示"}
+                          </button>
+                        </div>
+                        <input
+                          value={apiKeyDraft}
+                          onChange={(e) => setApiKeyDraft(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                              e.preventDefault();
+                              void handleSaveApiKey();
+                            }
+                          }}
+                          autoFocus
+                          type={apiKeyVisible ? "text" : "password"}
+                          placeholder="粘贴你的 Ark API Key（Seedream/Deepseek 通用）"
+                          className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-slate-300"
+                        />
+                      </div>
+
+                      <button
+                        type="button"
+                        disabled={apiKeySaving}
+                        onClick={handleSaveApiKey}
+                        className="w-full rounded-lg bg-slate-900 px-3 py-2 text-sm font-semibold text-white hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-70"
+                      >
+                        {apiKeySaving ? "保存中..." : "保存并使用"}
+                      </button>
+                      <button
+                        type="button"
+                        disabled={apiKeySaving || (apiKeyStatus ? !apiKeyStatus.userKey : false)}
+                        onClick={handleClearApiKey}
+                        className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 hover:border-slate-300 disabled:cursor-not-allowed disabled:opacity-60"
+                      >
+                        清除浏览器 Key
+                      </button>
+                      <p className="text-[11px] text-slate-500">
+                        Key 会写入浏览器 Cookie（httpOnly），不会写入数据库；如部署已配置{" "}
+                        <span className="font-mono">volcengine_api_key</span>{" "}
+                        可无需填写。
+                      </p>
                     </div>
                   </div>
                 ) : null}

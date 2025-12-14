@@ -1,10 +1,13 @@
 import { NextResponse } from "next/server";
+import { cookies } from "next/headers";
 import { generateSeedreamImage } from "@/lib/clients/ark";
 
 type SeedreamResponse = {
   data?: { url?: string }[];
   output?: { url?: string }[];
 };
+
+const ARK_API_KEY_COOKIE = "ai_image_ark_api_key";
 
 export async function POST(request: Request) {
   const body = await request.json().catch(() => ({}));
@@ -17,6 +20,22 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Prompt 不能为空" }, { status: 400 });
   }
 
+  const cookieStore = await cookies();
+  const userApiKey = cookieStore.get(ARK_API_KEY_COOKIE)?.value?.trim();
+  const serverApiKey =
+    (process.env.volcengine_api_key ?? process.env.SEEDREAM_API_KEY ?? "").trim();
+  const apiKey = userApiKey || serverApiKey;
+
+  if (!apiKey) {
+    return NextResponse.json(
+      {
+        error:
+          "缺少 Ark API Key：请在部署环境变量中配置 volcengine_api_key（或 SEEDREAM_API_KEY），或在生成页右下角“🔑 API Key”里粘贴你的 Key。",
+      },
+      { status: 401 },
+    );
+  }
+
   try {
     const result = (await generateSeedreamImage({
       prompt,
@@ -25,6 +44,7 @@ export async function POST(request: Request) {
       watermark: false,
       image,
       sequential_image_generation: image ? "disabled" : undefined,
+      apiKey,
     })) as SeedreamResponse;
 
     const imageUrl =
