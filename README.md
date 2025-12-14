@@ -13,12 +13,14 @@
 1. 复制 `.env.example` 为 `.env.local` 并填写：
 
 ```
-DATABASE_URL="file:./prisma/dev.db"
+DATABASE_URL="file:./prisma/prisma/dev.db"
 volcengine_api_key="YOUR_ARK_API_KEY"
 # 可选端点：SEEDREAM4_ENDPOINT / DEEPSEEK_ENDPOINT
 ```
 
-2. 运行前安装依赖：`pnpm install`
+2. （可选）云部署场景可让“使用者自带 Key”：打开 `/generate` 页面右下角 `🔑 API Key`，粘贴保存后会写入浏览器 Cookie（httpOnly），服务端会优先使用该 Key；未配置时回退到服务端环境变量。
+
+3. 运行前安装依赖：`pnpm install`
 
 ## 快速开始
 

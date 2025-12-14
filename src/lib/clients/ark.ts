@@ -4,6 +4,9 @@ type FetcherOptions = {
   body: Record<string, unknown>;
 };
 
+const getDefaultArkApiKey = () =>
+  process.env.volcengine_api_key ?? process.env.SEEDREAM_API_KEY ?? "";
+
 const DEFAULT_IMAGE_ENDPOINT =
   process.env.SEEDREAM4_ENDPOINT ??
   "https://ark.cn-beijing.volces.com/api/v3/images/generations";
@@ -49,10 +52,13 @@ export type SeedreamImageParams = {
   watermark?: boolean;
   image?: string | string[];
   sequential_image_generation?: "enabled" | "disabled";
+  apiKey?: string;
+  endpoint?: string;
 };
 
 export async function generateSeedreamImage(params: SeedreamImageParams) {
-  const apiKey = process.env.volcengine_api_key ?? "";
+  const apiKey = params.apiKey ?? getDefaultArkApiKey();
+  const endpoint = params.endpoint ?? DEFAULT_IMAGE_ENDPOINT;
 
   const payload = {
     model: params.model ?? DEFAULT_IMAGE_MODEL,
@@ -64,7 +70,7 @@ export async function generateSeedreamImage(params: SeedreamImageParams) {
   };
 
   return arkRequest<{ task_id?: string; data?: unknown } | unknown>({
-    endpoint: DEFAULT_IMAGE_ENDPOINT,
+    endpoint,
     apiKey,
     body: payload,
   });
@@ -81,10 +87,11 @@ export type DeepseekChatParams = {
   stream?: boolean;
   temperature?: number;
   endpoint?: string;
+  apiKey?: string;
 };
 
 export async function runDeepseekChat(params: DeepseekChatParams) {
-  const apiKey = process.env.volcengine_api_key ?? "";
+  const apiKey = params.apiKey ?? getDefaultArkApiKey();
   const endpoint = params.endpoint ?? DEFAULT_CHAT_ENDPOINT;
 
   const payload = {
