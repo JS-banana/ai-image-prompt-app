@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createPrompt } from "@/lib/data/prompts";
+import { assertAdminWriteAccess } from "@/lib/admin-write";
 
 const parseCsv = (value: string) =>
   value
@@ -10,6 +11,8 @@ const parseCsv = (value: string) =>
     .filter(Boolean);
 
 export async function createPromptAction(formData: FormData) {
+  await assertAdminWriteAccess();
+
   const title = String(formData.get("title") ?? "").trim();
   const body = String(formData.get("body") ?? "").trim();
   const tags = parseCsv(String(formData.get("tags") ?? ""));

@@ -20,7 +20,9 @@ volcengine_api_key="YOUR_ARK_API_KEY"
 
 2. （可选）云部署场景可让“使用者自带 Key”：打开 `/generate` 页面右下角 `🔑 API Key`，粘贴保存后会写入浏览器 Cookie（httpOnly），服务端会优先使用该 Key；未配置时回退到服务端环境变量。
 
-3. 运行前安装依赖：`pnpm install`
+3. （可选）多人使用时建议开启“写入保护”：设置环境变量 `ADMIN_WRITE_KEY` 后，`/prompts` 与 `/models` 的创建/编辑会被锁定，管理员需在页面里输入口令解锁（不影响 `/generate` 生成）。
+
+4. 运行前安装依赖：`pnpm install`
 
 ## 快速开始
 
