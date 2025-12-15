@@ -2,8 +2,11 @@
 
 import { revalidatePath } from "next/cache";
 import { createModelConfig } from "@/lib/data/models";
+import { assertAdminWriteAccess } from "@/lib/admin-write";
 
 export async function createModelConfigAction(formData: FormData) {
+  await assertAdminWriteAccess();
+
   const provider = String(formData.get("provider") ?? "").trim();
   const modelName = String(formData.get("modelName") ?? "").trim();
   const resolution = String(formData.get("resolution") ?? "").trim();

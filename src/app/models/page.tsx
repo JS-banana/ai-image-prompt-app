@@ -1,4 +1,5 @@
 import { createModelConfigAction } from "@/app/models/actions";
+import { AdminWriteGate } from "@/components/admin-write-gate";
 import { getModelConfigs } from "@/lib/data/models";
 
 const formatModelName = (name: string) =>
@@ -74,60 +75,62 @@ export default async function ModelsPage() {
 
       <section className="grid gap-4 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
         <h2 className="text-lg font-semibold text-slate-900">新增模型（占位）</h2>
-        <form action={createModelConfigAction} className="space-y-4">
-          <div className="grid gap-4 md:grid-cols-2">
-            <label className="space-y-1 text-sm text-slate-700">
-              Provider
-              <input
-                name="provider"
-                className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none ring-1 ring-transparent transition focus:border-slate-300 focus:ring-slate-200"
-                placeholder="Google / Volcengine / Alibaba / HuggingFace ..."
-                required
-              />
-            </label>
-            <label className="space-y-1 text-sm text-slate-700">
-              模型名称
-              <input
-                name="modelName"
-                className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none ring-1 ring-transparent transition focus:border-slate-300 focus:ring-slate-200"
-                placeholder="nano-banana / dreamseed4 / qwen-image-edit"
-                required
-              />
-            </label>
-          </div>
-          <div className="grid gap-4 md:grid-cols-3">
-            <label className="space-y-1 text-sm text-slate-700">
-              默认分辨率
-              <input
-                name="resolution"
-                className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none ring-1 ring-transparent transition focus:border-slate-300 focus:ring-slate-200"
-                placeholder="1024x1024"
-              />
-            </label>
-            <label className="space-y-1 text-sm text-slate-700">
-              默认参数（JSON）
-              <input
-                name="defaults"
-                className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none ring-1 ring-transparent transition focus:border-slate-300 focus:ring-slate-200"
-                placeholder='如 { "cfg": 7, "steps": 30 }'
-              />
-            </label>
-            <label className="space-y-1 text-sm text-slate-700">
-              API Key 引用
-              <input
-                name="apiKeyRef"
-                className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none ring-1 ring-transparent transition focus:border-slate-300 focus:ring-slate-200"
-                placeholder="env:GOOGLE_API_KEY"
-              />
-            </label>
-          </div>
-          <button className="w-full rounded-lg bg-slate-900 px-3 py-2 text-sm font-semibold text-white transition hover:bg-slate-800">
-            保存配置
-          </button>
-          <p className="text-xs text-slate-500">
-            通过 Server Actions + Prisma 入库，稍后补参数校验、连通性检测与并发/超时策略。
-          </p>
-        </form>
+        <AdminWriteGate>
+          <form action={createModelConfigAction} className="space-y-4">
+            <div className="grid gap-4 md:grid-cols-2">
+              <label className="space-y-1 text-sm text-slate-700">
+                Provider
+                <input
+                  name="provider"
+                  className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none ring-1 ring-transparent transition focus:border-slate-300 focus:ring-slate-200"
+                  placeholder="Google / Volcengine / Alibaba / HuggingFace ..."
+                  required
+                />
+              </label>
+              <label className="space-y-1 text-sm text-slate-700">
+                模型名称
+                <input
+                  name="modelName"
+                  className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none ring-1 ring-transparent transition focus:border-slate-300 focus:ring-slate-200"
+                  placeholder="nano-banana / dreamseed4 / qwen-image-edit"
+                  required
+                />
+              </label>
+            </div>
+            <div className="grid gap-4 md:grid-cols-3">
+              <label className="space-y-1 text-sm text-slate-700">
+                默认分辨率
+                <input
+                  name="resolution"
+                  className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none ring-1 ring-transparent transition focus:border-slate-300 focus:ring-slate-200"
+                  placeholder="1024x1024"
+                />
+              </label>
+              <label className="space-y-1 text-sm text-slate-700">
+                默认参数（JSON）
+                <input
+                  name="defaults"
+                  className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none ring-1 ring-transparent transition focus:border-slate-300 focus:ring-slate-200"
+                  placeholder='如 { "cfg": 7, "steps": 30 }'
+                />
+              </label>
+              <label className="space-y-1 text-sm text-slate-700">
+                API Key 引用
+                <input
+                  name="apiKeyRef"
+                  className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none ring-1 ring-transparent transition focus:border-slate-300 focus:ring-slate-200"
+                  placeholder="env:GOOGLE_API_KEY"
+                />
+              </label>
+            </div>
+            <button className="w-full rounded-lg bg-slate-900 px-3 py-2 text-sm font-semibold text-white transition hover:bg-slate-800">
+              保存配置
+            </button>
+            <p className="text-xs text-slate-500">
+              通过 Server Actions + Prisma 入库，稍后补参数校验、连通性检测与并发/超时策略。
+            </p>
+          </form>
+        </AdminWriteGate>
       </section>
     </div>
   );

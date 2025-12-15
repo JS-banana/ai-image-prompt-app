@@ -1,5 +1,6 @@
 import { createPromptAction } from "@/app/prompts/actions";
 import { getPrompts } from "@/lib/data/prompts";
+import { AdminWriteGate } from "@/components/admin-write-gate";
 import { PromptBody } from "@/components/prompt-body";
 import Image from "next/image";
 
@@ -189,51 +190,53 @@ export default async function PromptsPage() {
 
         <section className="space-y-4 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
           <h2 className="text-lg font-semibold text-slate-900">快速创建（占位）</h2>
-          <form action={createPromptAction} className="space-y-4">
-            <label className="space-y-1 text-sm text-slate-700">
-              标题
-              <input
-                name="title"
-                className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none ring-1 ring-transparent transition focus:border-slate-300 focus:ring-slate-200"
-                placeholder="如：暖色胶片人像"
-                required
-              />
-            </label>
-            <label className="space-y-1 text-sm text-slate-700">
-              主体描述
-              <textarea
-                name="body"
-                className="h-28 w-full resize-none rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none ring-1 ring-transparent transition focus:border-slate-300 focus:ring-slate-200"
-                placeholder="英文提示词正文占位"
-                required
-              />
-            </label>
-            <div className="grid gap-3 md:grid-cols-2">
+          <AdminWriteGate>
+            <form action={createPromptAction} className="space-y-4">
               <label className="space-y-1 text-sm text-slate-700">
-                标签（逗号分隔）
+                标题
                 <input
-                  name="tags"
+                  name="title"
                   className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none ring-1 ring-transparent transition focus:border-slate-300 focus:ring-slate-200"
-                  placeholder="portrait, film, warm"
+                  placeholder="如：暖色胶片人像"
+                  required
                 />
               </label>
               <label className="space-y-1 text-sm text-slate-700">
-                变量占位
-                <input
-                  name="variables"
-                  className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none ring-1 ring-transparent transition focus:border-slate-300 focus:ring-slate-200"
-                  placeholder="{lighting}, {style}"
+                主体描述
+                <textarea
+                  name="body"
+                  className="h-28 w-full resize-none rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none ring-1 ring-transparent transition focus:border-slate-300 focus:ring-slate-200"
+                  placeholder="英文提示词正文占位"
+                  required
                 />
               </label>
-            </div>
-            <button className="w-full rounded-lg bg-slate-900 px-3 py-2 text-sm font-semibold text-white transition hover:bg-slate-800">
-              保存到本地库
-            </button>
-            <p className="text-xs text-slate-500">
-              使用 Server Actions + Prisma 持久化到 SQLite / libsql，后续会添加导入 JSON
-              与最佳样本回写。
-            </p>
-          </form>
+              <div className="grid gap-3 md:grid-cols-2">
+                <label className="space-y-1 text-sm text-slate-700">
+                  标签（逗号分隔）
+                  <input
+                    name="tags"
+                    className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none ring-1 ring-transparent transition focus:border-slate-300 focus:ring-slate-200"
+                    placeholder="portrait, film, warm"
+                  />
+                </label>
+                <label className="space-y-1 text-sm text-slate-700">
+                  变量占位
+                  <input
+                    name="variables"
+                    className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none ring-1 ring-transparent transition focus:border-slate-300 focus:ring-slate-200"
+                    placeholder="{lighting}, {style}"
+                  />
+                </label>
+              </div>
+              <button className="w-full rounded-lg bg-slate-900 px-3 py-2 text-sm font-semibold text-white transition hover:bg-slate-800">
+                保存到本地库
+              </button>
+              <p className="text-xs text-slate-500">
+                使用 Server Actions + Prisma 持久化到 SQLite / libsql，后续会添加导入
+                JSON 与最佳样本回写。
+              </p>
+            </form>
+          </AdminWriteGate>
         </section>
       </div>
     </div>
