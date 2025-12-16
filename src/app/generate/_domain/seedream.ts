@@ -29,6 +29,56 @@ export const parseSizeToPixels = (size: string): number | null => {
   return null;
 };
 
+export const parseSizeToDimensions = (size: string): [number, number] | null => {
+  const lower = size.toLowerCase().trim();
+  if (lower === "2k") return [2048, 2048];
+  if (lower === "4k") return [4096, 4096];
+
+  const match = lower.match(/^(\d+)\s*[x*]\s*(\d+)$/);
+  if (!match) return null;
+
+  const w = Number(match[1]);
+  const h = Number(match[2]);
+  if (!Number.isFinite(w) || !Number.isFinite(h)) return null;
+
+  return [w, h];
+};
+
+const gcd = (a: number, b: number): number => {
+  let x = Math.abs(a);
+  let y = Math.abs(b);
+
+  while (y) {
+    const temp = y;
+    y = x % y;
+    x = temp;
+  }
+
+  return x || 1;
+};
+
+const DEFAULT_PREVIEW_ASPECT_RATIO = "4 / 5";
+
+export const getAspectRatioFromSize = (size: string): string => {
+  const normalized = size.toLowerCase().trim();
+
+  if (normalized === "2k" || normalized === "4k") {
+    return DEFAULT_PREVIEW_ASPECT_RATIO;
+  }
+
+  const dimensions = parseSizeToDimensions(size);
+  if (!dimensions) return DEFAULT_PREVIEW_ASPECT_RATIO;
+
+  const [width, height] = dimensions;
+  if (width <= 0 || height <= 0) return DEFAULT_PREVIEW_ASPECT_RATIO;
+
+  const divisor = gcd(width, height);
+  const normalizedWidth = width / divisor;
+  const normalizedHeight = height / divisor;
+
+  return `${normalizedWidth} / ${normalizedHeight}`;
+};
+
 export const getSizePresets = (model?: ModelConfigItem | null) => {
   if (!model) return [];
 
