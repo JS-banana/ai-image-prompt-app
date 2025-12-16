@@ -16,8 +16,10 @@ export type PromptListItem = {
   body: string;
 };
 
-export const getPrompts = async (): Promise<PromptListItem[]> => {
-  const data = await prisma.prompt.findMany({
+export const getPrompts = async (
+  client = prisma,
+): Promise<PromptListItem[]> => {
+  const data = await client.prompt.findMany({
     orderBy: { updatedAt: "desc" },
     include: {
       versions: {
@@ -61,13 +63,16 @@ export const getPrompts = async (): Promise<PromptListItem[]> => {
   }));
 };
 
-export const createPrompt = async (input: {
-  title: string;
-  body: string;
-  tags: string[];
-  variables: string[];
-}) => {
-  return prisma.prompt.create({
+export const createPrompt = async (
+  input: {
+    title: string;
+    body: string;
+    tags: string[];
+    variables: string[];
+  },
+  client = prisma,
+) => {
+  return client.prompt.create({
     data: {
       title: input.title,
       body: input.body,
@@ -83,8 +88,8 @@ export type PromptOption = {
   body: string;
 };
 
-export const getPromptOptions = async (): Promise<PromptOption[]> => {
-  const prompts = await prisma.prompt.findMany({
+export const getPromptOptions = async (client = prisma): Promise<PromptOption[]> => {
+  const prompts = await client.prompt.findMany({
     orderBy: { updatedAt: "desc" },
     select: { id: true, title: true, body: true },
   });

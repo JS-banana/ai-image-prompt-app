@@ -9,7 +9,24 @@ type SeedreamResponse = {
 
 const ARK_API_KEY_COOKIE = "ai_image_ark_api_key";
 
-export async function POST(request: Request) {
+type GenerateDeps = {
+  getCookies: typeof cookies;
+  generateImage: typeof generateSeedreamImage;
+  getEnvApiKey?: () => string;
+};
+
+const defaultDeps: GenerateDeps = {
+  getCookies: cookies,
+  generateImage: generateSeedreamImage,
+  getEnvApiKey: () =>
+    (process.env.volcengine_api_key ?? process.env.SEEDREAM_API_KEY ?? "")
+      .trim(),
+};
+
+export async function handleGenerateRequest(
+  request: Request,
+  deps: GenerateDeps = defaultDeps,
+) {
   const body = await request.json().catch(() => ({}));
   const prompt = String(body?.prompt ?? "").trim();
   const size = String(body?.size ?? "2K");
@@ -20,10 +37,9 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Prompt 不能为空" }, { status: 400 });
   }
 
-  const cookieStore = await cookies();
+  const cookieStore = await deps.getCookies();
   const userApiKey = cookieStore.get(ARK_API_KEY_COOKIE)?.value?.trim();
-  const serverApiKey =
-    (process.env.volcengine_api_key ?? process.env.SEEDREAM_API_KEY ?? "").trim();
+  const serverApiKey = deps.getEnvApiKey?.() ?? "";
   const apiKey = userApiKey || serverApiKey;
 
   if (!apiKey) {
@@ -37,7 +53,7 @@ export async function POST(request: Request) {
   }
 
   try {
-    const result = (await generateSeedreamImage({
+    const result = (await deps.generateImage({
       prompt,
       model,
       size,
@@ -55,4 +71,8 @@ export async function POST(request: Request) {
     const message = error instanceof Error ? error.message : "生成失败";
     return NextResponse.json({ error: message }, { status: 500 });
   }
+}
+
+export async function POST(request: Request) {
+  return handleGenerateRequest(request);
 }
