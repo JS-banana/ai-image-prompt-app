@@ -17,6 +17,9 @@
     "typecheck": "pnpm exec tsc --noEmit",
     "db:seed": "tsx prisma/seed.ts",
     "db:import:banana": "tsx scripts/import-banana-prompts.ts",
+    "test": "node --import tsx --test --test-reporter=dot tests/**/*.test.ts",
+    "test:watch": "node --import tsx --test --test-reporter=dot --watch tests/**/*.test.ts",
+    "test:coverage": "node --import tsx --test --test-reporter=dot --experimental-test-coverage tests/**/*.test.ts",
     "test:ark": "tsx scripts/ark-smoketest.ts"
   },
   "prisma": {

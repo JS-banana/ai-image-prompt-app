@@ -6,12 +6,22 @@ type Props = {
   text: string;
 };
 
+export async function copyText(
+  text: string,
+  clipboard: Pick<Clipboard, "writeText"> | null = navigator.clipboard,
+) {
+  if (!clipboard || typeof clipboard.writeText !== "function") {
+    throw new Error("Clipboard unavailable");
+  }
+  await clipboard.writeText(text);
+}
+
 export function CopyButton({ text }: Props) {
   const [copied, setCopied] = useState(false);
 
   const handleCopy = async () => {
     try {
-      await navigator.clipboard.writeText(text);
+      await copyText(text);
       setCopied(true);
       setTimeout(() => setCopied(false), 1500);
     } catch (error) {
