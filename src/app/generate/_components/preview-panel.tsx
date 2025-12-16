@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { forwardRef } from "react";
 import type { GenerationResult, HistoryItem } from "@/app/generate/_types";
+import { getAspectRatioFromSize } from "../_domain/seedream";
 
 type PreviewPanelProps = {
   result: GenerationResult | null;
@@ -31,6 +32,8 @@ export const PreviewPanel = forwardRef<HTMLDivElement, PreviewPanelProps>(
     },
     ref,
   ) {
+    const aspectRatio = getAspectRatioFromSize(size);
+
     return (
       <div className="space-y-4 md:sticky md:top-4" ref={ref}>
         <div className="space-y-3 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
@@ -48,14 +51,15 @@ export const PreviewPanel = forwardRef<HTMLDivElement, PreviewPanelProps>(
               <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
                 {result.imageUrl ? (
                   <div
-                    className="relative w-full overflow-hidden rounded-md"
-                    style={{ aspectRatio: "4 / 5" }}
+                    className="relative w-full overflow-hidden rounded-md bg-white"
+                    style={{ aspectRatio }}
                   >
                     <Image
                       src={result.imageUrl}
                       alt="Seedream 生成结果"
                       fill
                       className="object-contain"
+                      style={{ objectFit: "contain" }}
                       sizes="(max-width: 1024px) 100vw, 480px"
                       priority
                     />
