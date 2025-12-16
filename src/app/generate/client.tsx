@@ -29,6 +29,7 @@ export function GenerateClient({ prompts, models }: GenerateClientProps) {
   const [customSize, setCustomSize] = useState("");
   const [expandedPrompt, setExpandedPrompt] = useState<string | null>(null);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const [hasGenerated, setHasGenerated] = useState(false);
   const previewRef = useRef<HTMLDivElement | null>(null);
 
   const modelsById = useMemo(
@@ -96,7 +97,7 @@ export function GenerateClient({ prompts, models }: GenerateClientProps) {
   const shouldAutoOpenApiKey =
     apiKeyStatus?.activeSource === "none" && !apiKeyMenuDismissed;
 
-  const { history, imageHistory, historyLoaded, pushHistoryItem, clearHistory } =
+  const { imageHistory, historyLoaded, pushHistoryItem, clearHistory } =
     useSeedreamHistory();
 
   const {
@@ -140,8 +141,21 @@ export function GenerateClient({ prompts, models }: GenerateClientProps) {
     const value = customSize.trim();
     if (!value) return;
     const pixels = parseSizeToPixels(value);
+    const dimensions = value.toLowerCase().trim().match(/^(\d+)\s*[x*]\s*(\d+)$/);
+    const w = dimensions ? Number(dimensions[1]) : null;
+    const h = dimensions ? Number(dimensions[2]) : null;
+    const maxSide =
+      typeof w === "number" && typeof h === "number" ? Math.max(w, h) : null;
+
     if (pixels === null || pixels < MIN_SEEDREAM_PIXELS) {
-      setError("自定义分辨率格式不正确或像素不足 3,686,400");
+      setError(
+        `自定义分辨率格式不正确，或像素不足 ${MIN_SEEDREAM_PIXELS.toLocaleString()}（约 2K 级别）`,
+      );
+      return;
+    }
+
+    if (maxSide !== null && maxSide > 4096) {
+      setError("自定义分辨率单边不可超过 4096（请降低 W/H 或改用 4K 预设）");
       return;
     }
 
@@ -182,6 +196,7 @@ export function GenerateClient({ prompts, models }: GenerateClientProps) {
   };
 
   const handleGenerate = () => {
+    setHasGenerated(true);
     void generate({
       prompt: promptText,
       modelIds: selectedModels,
@@ -259,8 +274,6 @@ export function GenerateClient({ prompts, models }: GenerateClientProps) {
                 onSelectOption: (option: PromptOption) => {
                   setPromptText(option.body);
                 },
-                recent: history,
-                onPickRecent: setPromptText,
               }}
               upload={{
                 preview: uploadPreview,
@@ -312,6 +325,8 @@ export function GenerateClient({ prompts, models }: GenerateClientProps) {
 
             <PreviewPanel
               ref={previewRef}
+              loading={loading}
+              hasGenerated={hasGenerated}
               result={result}
               size={size}
               imageHistory={imageHistory}

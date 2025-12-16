@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { useEffect, useState } from "react";
 import { Dialog, DialogClose, DialogContent, DialogTitle } from "@/components/ui/dialog";
 
 type GenerateModalsProps = {
@@ -16,6 +17,23 @@ export function GenerateModals({
   previewImage,
   onClosePreviewImage,
 }: GenerateModalsProps) {
+  const [promptCopyState, setPromptCopyState] = useState<
+    "idle" | "copied" | "failed"
+  >("idle");
+  const [previewAspectByUrl, setPreviewAspectByUrl] = useState<
+    Record<string, string>
+  >({});
+
+  useEffect(() => {
+    if (promptCopyState === "idle") return;
+    const timer = window.setTimeout(() => setPromptCopyState("idle"), 1400);
+    return () => window.clearTimeout(timer);
+  }, [promptCopyState]);
+
+  const previewAspectRatio = previewImage
+    ? previewAspectByUrl[previewImage] ?? null
+    : null;
+
   return (
     <>
       <Dialog
@@ -41,11 +59,18 @@ export function GenerateModals({
             <button
               type="button"
               onClick={() => {
-                navigator.clipboard.writeText(expandedPrompt ?? "");
+                void navigator.clipboard
+                  .writeText(expandedPrompt ?? "")
+                  .then(() => setPromptCopyState("copied"))
+                  .catch(() => setPromptCopyState("failed"));
               }}
               className="rounded-full border border-slate-200 px-3 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-100"
             >
-              复制提示词
+              {promptCopyState === "copied"
+                ? "已复制"
+                : promptCopyState === "failed"
+                  ? "复制失败"
+                  : "复制提示词"}
             </button>
           </div>
         </DialogContent>
@@ -58,7 +83,8 @@ export function GenerateModals({
         }}
       >
         <DialogContent className="w-[min(92vw,56rem)] overflow-hidden p-0">
-          <div className="relative w-full max-w-3xl overflow-hidden rounded-2xl bg-white shadow-2xl">
+          <div className="relative w-full overflow-hidden rounded-2xl bg-white shadow-2xl">
+            <DialogTitle className="sr-only">图片预览</DialogTitle>
             <DialogClose asChild>
               <button
                 type="button"
@@ -69,7 +95,10 @@ export function GenerateModals({
             </DialogClose>
             <div
               className="relative w-full"
-              style={{ aspectRatio: "3 / 4", maxHeight: "70vh" }}
+              style={{
+                aspectRatio: previewAspectRatio ?? "1 / 1",
+                maxHeight: "70vh",
+              }}
             >
               {previewImage ? (
                 <Image
@@ -79,6 +108,15 @@ export function GenerateModals({
                   className="object-contain bg-black"
                   sizes="(max-width: 768px) 100vw, 800px"
                   priority
+                  onLoadingComplete={(img) => {
+                    if (!img?.naturalWidth || !img?.naturalHeight) return;
+                    const nextRatio = `${img.naturalWidth} / ${img.naturalHeight}`;
+                    const url = previewImage;
+                    setPreviewAspectByUrl((prev) => {
+                      if (!url || prev[url] === nextRatio) return prev;
+                      return { ...prev, [url]: nextRatio };
+                    });
+                  }}
                 />
               ) : null}
             </div>

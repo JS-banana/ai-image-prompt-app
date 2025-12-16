@@ -8,16 +8,27 @@ const ARK_API_KEY_COOKIE = "ai_image_ark_api_key";
 const getServerArkApiKey = () =>
   process.env.volcengine_api_key ?? process.env.SEEDREAM_API_KEY ?? "";
 
+const maskApiKey = (apiKey: string) => {
+  const trimmed = apiKey.trim();
+  if (!trimmed) return "";
+  if (trimmed.length <= 8) {
+    return `${trimmed.slice(0, 2)}…${trimmed.slice(-2)}`;
+  }
+  return `${trimmed.slice(0, 3)}…${trimmed.slice(-4)}`;
+};
+
 const buildStatus = async () => {
   const serverKey = Boolean(getServerArkApiKey().trim());
   const cookieStore = await cookies();
-  const userKey = Boolean(cookieStore.get(ARK_API_KEY_COOKIE)?.value?.trim());
+  const userKeyValue = cookieStore.get(ARK_API_KEY_COOKIE)?.value?.trim() ?? "";
+  const userKey = Boolean(userKeyValue);
   const activeSource = userKey ? "user" : serverKey ? "server" : "none";
 
   return {
     provider: "volcengine-ark",
     serverKey,
     userKey,
+    userKeyMasked: userKey ? maskApiKey(userKeyValue) : undefined,
     activeSource,
   };
 };
@@ -42,6 +53,7 @@ export async function POST(request: Request) {
       provider: "volcengine-ark",
       serverKey: Boolean(getServerArkApiKey().trim()),
       userKey: true,
+      userKeyMasked: maskApiKey(apiKey),
       activeSource: "user",
     },
     { headers: { "Cache-Control": "no-store" } },
