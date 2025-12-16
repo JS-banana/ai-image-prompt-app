@@ -57,7 +57,7 @@ const gcd = (a: number, b: number): number => {
   return x || 1;
 };
 
-const DEFAULT_PREVIEW_ASPECT_RATIO = "4 / 5";
+const DEFAULT_PREVIEW_ASPECT_RATIO = "1 / 1";
 
 export const getAspectRatioFromSize = (size: string): string => {
   const normalized = size.toLowerCase().trim();
@@ -127,4 +127,3 @@ export const getDefaultSize = (model?: ModelConfigItem | null) => {
 
   return model.resolution ?? SEEDREAM_SIZES[0];
 };
-

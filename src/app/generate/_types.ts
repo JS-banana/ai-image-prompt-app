@@ -25,8 +25,10 @@ export type ApiKeyStatus = {
   provider: string;
   serverKey: boolean;
   userKey: boolean;
+  userKeyMasked?: string;
   activeSource: "user" | "server" | "none";
 };
 
 export type ActiveMenu = "prompt" | "model" | "size" | "apikey" | null;
 
+export type SizeOrientation = "portrait" | "landscape" | "square";
