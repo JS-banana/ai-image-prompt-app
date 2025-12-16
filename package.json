@@ -17,9 +17,9 @@
     "typecheck": "pnpm exec tsc --noEmit",
     "db:seed": "tsx prisma/seed.ts",
     "db:import:banana": "tsx scripts/import-banana-prompts.ts",
-    "test": "node --import tsx --test --test-reporter=dot tests/**/*.test.ts",
-    "test:watch": "node --import tsx --test --test-reporter=dot --watch tests/**/*.test.ts",
-    "test:coverage": "node --import tsx --test --test-reporter=dot --experimental-test-coverage tests/**/*.test.ts",
+    "test": "vitest run",
+    "test:watch": "vitest watch",
+    "test:coverage": "vitest run --coverage",
     "test:ark": "tsx scripts/ark-smoketest.ts"
   },
   "prisma": {
@@ -46,8 +46,14 @@
     "eslint-config-next": "16.0.7",
     "husky": "^9.1.7",
     "lint-staged": "^15.4.3",
+    "@testing-library/react": "^16.2.0",
+    "@testing-library/user-event": "^14.5.2",
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/dom": "^10.4.0",
+    "jsdom": "^26.0.0",
     "prettier": "^3.4.2",
     "tailwindcss": "^4",
+    "vitest": "^2.1.4",
     "tsx": "^4.19.2",
     "typescript": "^5"
   },

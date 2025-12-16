@@ -1,6 +1,5 @@
-import assert from "node:assert/strict";
-import { test } from "node:test";
 import { handleGenerateRequest } from "@/app/api/generate/route";
+import { describe, expect, it } from "vitest";
 
 type Cookie = { value: string };
 
@@ -22,77 +21,78 @@ const jsonRequest = (body: unknown) =>
     body: JSON.stringify(body),
   });
 
-test("rejects missing prompt", async () => {
-  const deps = {
-    getCookies: async () => ({ get: () => undefined } satisfies CookieStore),
-    generateImage: async () => ({}),
-    getEnvApiKey: () => "env-key",
-  };
+describe("handleGenerateRequest", () => {
+  it("rejects missing prompt", async () => {
+    const deps = {
+      getCookies: async () => ({ get: () => undefined } satisfies CookieStore),
+      generateImage: async () => ({}),
+      getEnvApiKey: () => "env-key",
+    };
 
-  const res = await handleGenerateRequest(jsonRequest({ prompt: "   " }), deps);
-  const data = await res.json();
+    const res = await handleGenerateRequest(jsonRequest({ prompt: "   " }), deps);
+    const data = await res.json();
 
-  assert.equal(res.status, 400);
-  assert.equal(data.error, "Prompt 不能为空");
-});
+    expect(res.status).toBe(400);
+    expect(data.error).toBe("Prompt 不能为空");
+  });
 
-test("requires api key when neither cookie nor env provided", async () => {
-  const deps = {
-    getCookies: async () => ({ get: () => undefined } satisfies CookieStore),
-    generateImage: async () => ({}),
-    getEnvApiKey: () => "",
-  };
+  it("requires api key when neither cookie nor env provided", async () => {
+    const deps = {
+      getCookies: async () => ({ get: () => undefined } satisfies CookieStore),
+      generateImage: async () => ({}),
+      getEnvApiKey: () => "",
+    };
 
-  const res = await handleGenerateRequest(jsonRequest({ prompt: "ok" }), deps);
-  const data = await res.json();
+    const res = await handleGenerateRequest(jsonRequest({ prompt: "ok" }), deps);
+    const data = await res.json();
 
-  assert.equal(res.status, 401);
-  assert.match(data.error, /缺少 Ark API Key/);
-});
+    expect(res.status).toBe(401);
+    expect(data.error).toMatch(/缺少 Ark API Key/);
+  });
 
-test("passes api key and payload to generator", async () => {
-  let received: GenerateCall | null = null;
-  const deps = {
-    getCookies: async () =>
-      ({ get: (name: string) =>
-        name === "ai_image_ark_api_key"
-          ? ({ value: "cookie-key" } satisfies Cookie)
-          : undefined } satisfies CookieStore),
-    generateImage: async (payload: GenerateCall) => {
-      received = payload;
-      return { data: [{ url: "https://image/url" }] };
-    },
-    getEnvApiKey: () => "env-key",
-  };
+  it("passes api key and payload to generator", async () => {
+    let received: GenerateCall | null = null;
+    const deps = {
+      getCookies: async () =>
+        ({ get: (name: string) =>
+          name === "ai_image_ark_api_key"
+            ? ({ value: "cookie-key" } satisfies Cookie)
+            : undefined } satisfies CookieStore),
+      generateImage: async (payload: GenerateCall) => {
+        received = payload;
+        return { data: [{ url: "https://image/url" }] };
+      },
+      getEnvApiKey: () => "env-key",
+    };
 
-  const res = await handleGenerateRequest(
-    jsonRequest({ prompt: "hello", size: "4K", image: "seed-image" }),
-    deps,
-  );
-  const data = await res.json();
+    const res = await handleGenerateRequest(
+      jsonRequest({ prompt: "hello", size: "4K", image: "seed-image" }),
+      deps,
+    );
+    const data = await res.json();
 
-  assert.equal(res.status, 200);
-  assert.equal(data.imageUrl, "https://image/url");
-  assert.ok(received);
-  assert.equal(received?.apiKey, "cookie-key");
-  assert.equal(received?.prompt, "hello");
-  assert.equal(received?.size, "4K");
-  assert.equal(received?.model, "doubao-seedream-4-5-251128");
-  assert.equal(received?.sequential_image_generation, "disabled");
-});
+    expect(res.status).toBe(200);
+    expect(data.imageUrl).toBe("https://image/url");
+    expect(received?.apiKey).toBe("cookie-key");
+    expect(received?.prompt).toBe("hello");
+    expect(received?.size).toBe("4K");
+    expect(received?.model).toBe("doubao-seedream-4-5-251128");
+    expect(received?.sequential_image_generation).toBe("disabled");
+  });
 
-test("returns server error message on failures", async () => {
-  const deps = {
-    getCookies: async () => ({ get: () => undefined } satisfies CookieStore),
-    generateImage: async () => {
-      throw new Error("upstream failed");
-    },
-    getEnvApiKey: () => "env-key",
-  };
+  it("returns server error message on failures", async () => {
+    const deps = {
+      getCookies: async () => ({ get: () => undefined } satisfies CookieStore),
+      generateImage: async () => {
+        throw new Error("upstream failed");
+      },
+      getEnvApiKey: () => "env-key",
+    };
 
-  const res = await handleGenerateRequest(jsonRequest({ prompt: "hello" }), deps);
-  const data = await res.json();
+    const res = await handleGenerateRequest(jsonRequest({ prompt: "hello" }), deps);
+    const data = await res.json();
 
-  assert.equal(res.status, 500);
-  assert.equal(data.error, "upstream failed");
+    expect(res.status).toBe(500);
+    expect(data.error).toBe("upstream failed");
+  });
 });
