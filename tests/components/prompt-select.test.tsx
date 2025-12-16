@@ -1,39 +1,57 @@
-import assert from "node:assert/strict";
-import { test } from "node:test";
-import React from "react";
-import { renderToStaticMarkup } from "react-dom/server";
 import { PromptSelect } from "@/components/prompt-select";
+import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { describe, expect, it, vi } from "vitest";
 
-test("renders placeholder when no selection", () => {
-  const html = renderToStaticMarkup(
-    <PromptSelect
-      name="promptId"
-      placeholder="选择提示词..."
-      value={null}
-      options={[
-        { id: "1", title: "风景", body: "scenery" },
-        { id: "2", title: "肖像", body: "portrait" },
-      ]}
-    />,
-  );
+const OPTIONS = [
+  { id: "1", title: "风景", body: "scenery" },
+  { id: "2", title: "肖像", body: "portrait" },
+];
 
-  assert.match(html, /选择提示词\.\.\./);
-  assert.match(html, /选择后将自动填充到下方输入框/);
-  assert.equal(html.includes("type=\"hidden\""), false);
-});
+describe("PromptSelect", () => {
+  it("shows placeholder hint when no selection", () => {
+    render(
+      <PromptSelect
+        name="promptId"
+        placeholder="选择提示词..."
+        value={null}
+        options={OPTIONS}
+      />,
+    );
 
-test("renders hidden input when value is chosen", () => {
-  const html = renderToStaticMarkup(
-    <PromptSelect
-      name="promptId"
-      value="2"
-      options={[
-        { id: "1", title: "风景", body: "scenery" },
-        { id: "2", title: "肖像", body: "portrait" },
-      ]}
-    />,
-  );
+    expect(screen.getByRole("combobox")).toHaveValue("");
+    expect(screen.getByText("选择后将自动填充到下方输入框")).toBeInTheDocument();
+    expect(screen.queryByDisplayValue("2")).not.toBeInTheDocument();
+  });
 
-  assert.match(html, /value=\"2\"[^>]*>肖像/);
-  assert.match(html, /type=\"hidden\" name=\"promptId\" value=\"2\"/);
+  it("selects an option and emits change", async () => {
+    const onChange = vi.fn();
+    const user = userEvent.setup();
+
+    render(
+      <PromptSelect name="promptId" options={OPTIONS} onChange={onChange} />,
+    );
+
+    const select = screen.getByRole("combobox");
+    await user.selectOptions(select, "2");
+
+    expect(onChange).toHaveBeenCalledWith(OPTIONS[1]);
+    expect(screen.getByRole("option", { name: "肖像" }).selected).toBe(true);
+    const hidden = document.querySelector('input[type="hidden"]');
+    expect(hidden).toHaveAttribute("name", "promptId");
+    expect(hidden).toHaveValue("2");
+  });
+
+  it("allows clearing the selection", async () => {
+    const user = userEvent.setup();
+
+    render(<PromptSelect name="promptId" options={OPTIONS} />);
+
+    const select = screen.getByRole("combobox");
+    await user.selectOptions(select, "1");
+    await user.click(screen.getByRole("button", { name: "清空" }));
+
+    expect(screen.getByRole("combobox")).toHaveValue("");
+    expect(document.querySelector('input[type="hidden"]')).toBeNull();
+  });
 });

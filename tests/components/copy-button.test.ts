@@ -1,20 +1,21 @@
-import assert from "node:assert/strict";
-import { test } from "node:test";
 import { copyText } from "@/components/copy-button";
+import { describe, expect, it } from "vitest";
 
-test("copyText writes to provided clipboard", async () => {
-  const writes: string[] = [];
-  const clipboard = {
-    writeText: async (value: string) => {
-      writes.push(value);
-    },
-  };
+describe("copyText", () => {
+  it("writes to the provided clipboard", async () => {
+    const writes: string[] = [];
+    const clipboard = {
+      writeText: async (value: string) => {
+        writes.push(value);
+      },
+    } satisfies Pick<Clipboard, "writeText">;
 
-  await copyText("hello", clipboard);
+    await copyText("hello", clipboard);
 
-  assert.deepEqual(writes, ["hello"]);
-});
+    expect(writes).toEqual(["hello"]);
+  });
 
-test("copyText throws when clipboard is missing", async () => {
-  await assert.rejects(() => copyText("text", null), /Clipboard unavailable/);
+  it("throws when clipboard is missing", async () => {
+    await expect(copyText("text", null)).rejects.toThrow(/Clipboard unavailable/);
+  });
 });
