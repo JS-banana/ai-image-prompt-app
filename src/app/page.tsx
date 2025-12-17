@@ -16,6 +16,11 @@ const cards = [
     body: "同 Prompt 多模型并行生成，标记最佳样本，稍后接入历史与导出。",
     href: "/generate",
   },
+  {
+    title: "生成结果库",
+    body: "把每次生成的图片 URL 与 Prompt 持久化到 SQLite，支持预览、搜索与清理。",
+    href: "/gallery",
+  },
 ];
 
 export default function Home() {

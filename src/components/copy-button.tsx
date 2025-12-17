@@ -1,9 +1,13 @@
 "use client";
 
 import { useState } from "react";
+import { cn } from "@/lib/utils";
 
 type Props = {
   text: string;
+  label?: string;
+  copiedLabel?: string;
+  className?: string;
 };
 
 export async function copyText(
@@ -16,7 +20,12 @@ export async function copyText(
   await clipboard.writeText(text);
 }
 
-export function CopyButton({ text }: Props) {
+export function CopyButton({
+  text,
+  label = "复制",
+  copiedLabel = "已复制",
+  className,
+}: Props) {
   const [copied, setCopied] = useState(false);
 
   const handleCopy = async () => {
@@ -32,10 +41,13 @@ export function CopyButton({ text }: Props) {
   return (
     <button
       onClick={handleCopy}
-      className="rounded-full border border-slate-200 px-3 py-1 text-xs font-semibold text-slate-700 transition hover:bg-slate-100"
+      className={cn(
+        "rounded-full border border-slate-200 px-3 py-1 text-xs font-semibold text-slate-700 transition hover:bg-slate-100",
+        className,
+      )}
       type="button"
     >
-      {copied ? "已复制" : "复制"}
+      {copied ? copiedLabel : label}
     </button>
   );
 }

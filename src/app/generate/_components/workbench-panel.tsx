@@ -743,7 +743,10 @@ export function WorkbenchPanel({
                   <span>API Key</span>
                 </button>
               </DialogTrigger>
-                <DialogContent className="w-[min(92vw,28rem)]">
+                <DialogContent
+                  aria-describedby={undefined}
+                  className="w-[min(92vw,28rem)]"
+                >
                   <div className="mb-4 flex items-center justify-between">
                     <DialogTitle>API Key（火山 Ark）</DialogTitle>
                     <DialogClose asChild>
