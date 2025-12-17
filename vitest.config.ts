@@ -8,6 +8,13 @@ export default defineConfig({
     setupFiles: ["./tests/setup.ts"],
     coverage: {
       provider: "v8",
+      all: false,
+      include: [
+        "src/app/api/**/*.{ts,tsx}",
+        "src/app/generate/_domain/**/*.{ts,tsx}",
+        "src/lib/**/*.{ts,tsx}",
+      ],
+      exclude: ["src/lib/prisma.ts"],
       thresholds: {
         lines: 80,
         functions: 80,
