@@ -152,7 +152,7 @@ describe("getGenerationGalleryPage", () => {
       cursor?: { id: string };
       where?: { status?: string };
     };
-    let receivedArgs: FindManyArgs | null = null;
+    let receivedArgs = {} as FindManyArgs;
     const makeRow = (id: string, createdAt: string) => ({
       id,
       status: "SUCCESS",
@@ -187,7 +187,7 @@ describe("getGenerationGalleryPage", () => {
 
     const page = await getGenerationGalleryPage({ take: 2 }, client as never);
 
-    expect(receivedArgs?.take).toBe(3);
+    expect(receivedArgs.take).toBe(3);
     expect(page.items).toHaveLength(2);
     expect(page.nextCursor).toBe("r2");
     expect(page.items[0]).toMatchObject({
