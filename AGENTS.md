@@ -43,7 +43,7 @@
 ## 测试与 CI（当前进度）
 
 - 已接入 Vitest + RTL + MSW：`vitest.config.ts`、`tests/setup.ts`、`tests/helpers/msw.ts`
-- 当前基线（2025-12-17）：`pnpm test` ✅ 全绿；`pnpm build` ✅
+- 当前基线（2025-12-17）：`pnpm test` 全绿；`pnpm build`
 - 已接入 Playwright / E2E：`e2e/`（3 条 Journey，全 mock `/api/generate`、`/api/apikey`）
 - 已接入 GitHub Actions：`.github/workflows/ci.yml`（`lint` → `typecheck` → `test:coverage` → `e2e` 严格 gate）
 
