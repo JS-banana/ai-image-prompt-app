@@ -267,7 +267,6 @@ export function GenerateClient({ prompts, models, prefill }: GenerateClientProps
   };
 
   const handleClearHistory = () => {
-    if (!window.confirm("确定清空本地生成历史吗？")) return;
     clearHistory();
     setError(null);
   };
