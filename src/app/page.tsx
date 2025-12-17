@@ -1,5 +1,7 @@
 import Link from "next/link";
 
+const GITHUB_REPO_URL = "https://github.com/JS-banana/ai-image-prompt-app";
+
 const cards = [
   {
     title: "Prompt 管理",
@@ -45,12 +47,14 @@ export default function Home() {
             >
               立即试验
             </Link>
-            <Link
-              href="/docs"
+            <a
+              href={GITHUB_REPO_URL}
+              target="_blank"
+              rel="noreferrer noopener"
               className="rounded-full border border-slate-200 px-5 py-3 text-sm font-semibold text-slate-900 transition hover:bg-white"
             >
-              查看设计基线
-            </Link>
+              查看 GitHub
+            </a>
           </div>
         </section>
 

@@ -3,6 +3,8 @@ import Link from "next/link";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
+const GITHUB_REPO_URL = "https://github.com/JS-banana/ai-image-prompt-app";
+
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -52,9 +54,23 @@ export default function RootLayout({
                 <Link href="/generate" className="hover:text-slate-900">
                   生成对比
                 </Link>
-                <Link href="/docs" className="hover:text-slate-900">
-                  文档
-                </Link>
+                <a
+                  href={GITHUB_REPO_URL}
+                  target="_blank"
+                  rel="noreferrer noopener"
+                  aria-label="GitHub"
+                  title="GitHub"
+                  className="rounded-full p-2 text-slate-600 transition hover:bg-slate-100 hover:text-slate-900"
+                >
+                  <svg
+                    viewBox="0 0 24 24"
+                    className="h-5 w-5"
+                    fill="currentColor"
+                    aria-hidden="true"
+                  >
+                    <path d="M12 1.5c-5.8 0-10.5 4.8-10.5 10.7 0 4.7 3 8.6 7.2 10 .5.1.7-.2.7-.5v-2c-2.9.7-3.5-1.2-3.5-1.2-.5-1.3-1.2-1.6-1.2-1.6-1-.7.1-.7.1-.7 1.1.1 1.7 1.1 1.7 1.1 1 1.7 2.6 1.2 3.2.9.1-.7.4-1.2.7-1.5-2.3-.3-4.8-1.2-4.8-5.2 0-1.1.4-2 .9-2.7-.1-.3-.4-1.3.1-2.7 0 0 .8-.3 2.8 1a9.6 9.6 0 0 1 5.1 0c2-1.3 2.8-1 2.8-1 .5 1.4.2 2.4.1 2.7.6.7 1 1.6 1 2.7 0 4-2.5 4.9-4.8 5.2.4.3.7 1 .7 2v3c0 .3.2.6.7.5 4.2-1.4 7.2-5.3 7.2-10 0-5.9-4.7-10.7-10.5-10.7Z" />
+                  </svg>
+                </a>
               </nav>
             </div>
           </header>
