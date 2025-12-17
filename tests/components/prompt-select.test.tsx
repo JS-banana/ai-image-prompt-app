@@ -36,7 +36,8 @@ describe("PromptSelect", () => {
     await user.selectOptions(select, "2");
 
     expect(onChange).toHaveBeenCalledWith(OPTIONS[1]);
-    expect(screen.getByRole("option", { name: "肖像" }).selected).toBe(true);
+    const option = screen.getByRole("option", { name: "肖像" }) as HTMLOptionElement;
+    expect(option.selected).toBe(true);
     const hidden = document.querySelector('input[type="hidden"]');
     expect(hidden).toHaveAttribute("name", "promptId");
     expect(hidden).toHaveValue("2");
