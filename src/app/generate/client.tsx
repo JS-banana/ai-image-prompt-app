@@ -22,9 +22,19 @@ import { useImageGeneration } from "./_hooks/use-image-generation";
 import { useImageUpload } from "./_hooks/use-image-upload";
 import { useSeedreamHistory } from "./_hooks/use-seedream-history";
 
-export function GenerateClient({ prompts, models }: GenerateClientProps) {
+export function GenerateClient({ prompts, models, prefill }: GenerateClientProps) {
   const defaultSeedream = models.find((m) => isSeedreamModel(m));
-  const [promptText, setPromptText] = useState("");
+  const initialPrompt = typeof prefill?.prompt === "string" ? prefill.prompt : "";
+  const initialSize = typeof prefill?.size === "string" ? prefill.size.trim() : "";
+  const initialImageUrl =
+    typeof prefill?.imageUrl === "string" ? prefill.imageUrl.trim() : null;
+  const initialModelIds = Array.isArray(prefill?.modelIds)
+    ? prefill.modelIds
+        .map((id) => (typeof id === "string" ? id.trim() : ""))
+        .filter(Boolean)
+    : [];
+
+  const [promptText, setPromptText] = useState(initialPrompt);
   const [promptSearch, setPromptSearch] = useState("");
   const [customSize, setCustomSize] = useState("");
   const [expandedPrompt, setExpandedPrompt] = useState<string | null>(null);
@@ -43,6 +53,10 @@ export function GenerateClient({ prompts, models }: GenerateClientProps) {
   );
 
   const [selectedModels, setSelectedModels] = useState<string[]>(() => {
+    const initial = Array.from(
+      new Set(initialModelIds.filter((id) => models.some((m) => m.id === id))),
+    );
+    if (initial.length) return initial;
     if (defaultSeedream) return [defaultSeedream.id];
     if (models[0]) return [models[0].id];
     return [SEEDREAM_MODEL_ID];
@@ -74,9 +88,10 @@ export function GenerateClient({ prompts, models }: GenerateClientProps) {
     return SEEDREAM_SIZES;
   }, [sizeTargetModel]);
 
-  const [size, setSize] = useState(() =>
-    getDefaultSize(defaultSeedream ?? models[0] ?? null),
-  );
+  const [size, setSize] = useState(() => {
+    if (initialSize) return initialSize;
+    return getDefaultSize(defaultSeedream ?? models[0] ?? null);
+  });
 
   const [activeMenu, setActiveMenu] = useState<ActiveMenu>(null);
   const [apiKeyMenuDismissed, setApiKeyMenuDismissed] = useState(false);
@@ -106,7 +121,7 @@ export function GenerateClient({ prompts, models }: GenerateClientProps) {
     clearUpload,
     handleUpload,
     setImageFromHistory,
-  } = useImageUpload();
+  } = useImageUpload({ initialImage: initialImageUrl });
 
   const { loading, result, error, setError, generate } = useImageGeneration({
     modelsById,
