@@ -1,5 +1,7 @@
 import Link from "next/link";
 
+const GITHUB_REPO_URL = "https://github.com/JS-banana/ai-image-prompt-app";
+
 const cards = [
   {
     title: "Prompt 管理",
@@ -15,6 +17,11 @@ const cards = [
     title: "一键对比生成",
     body: "同 Prompt 多模型并行生成，标记最佳样本，稍后接入历史与导出。",
     href: "/generate",
+  },
+  {
+    title: "生成结果库",
+    body: "把每次生成的图片 URL 与 Prompt 持久化到 SQLite，支持预览、搜索与清理。",
+    href: "/gallery",
   },
 ];
 
@@ -40,12 +47,14 @@ export default function Home() {
             >
               立即试验
             </Link>
-            <Link
-              href="/docs"
+            <a
+              href={GITHUB_REPO_URL}
+              target="_blank"
+              rel="noreferrer noopener"
               className="rounded-full border border-slate-200 px-5 py-3 text-sm font-semibold text-slate-900 transition hover:bg-white"
             >
-              查看设计基线
-            </Link>
+              查看 GitHub
+            </a>
           </div>
         </section>
 

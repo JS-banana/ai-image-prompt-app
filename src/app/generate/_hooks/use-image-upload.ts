@@ -2,10 +2,19 @@
 
 import { useState } from "react";
 
-export function useImageUpload(options?: { maxSizeMB?: number }) {
+export function useImageUpload(options?: {
+  maxSizeMB?: number;
+  initialImage?: string | null;
+}) {
   const maxSizeMB = options?.maxSizeMB ?? 5;
-  const [uploadPreview, setUploadPreview] = useState<string | null>(null);
-  const [imageSource, setImageSource] = useState<string | null>(null); // dataURL 或 url
+  const initialImage =
+    typeof options?.initialImage === "string"
+      ? options.initialImage.trim() || null
+      : null;
+  const [uploadPreview, setUploadPreview] = useState<string | null>(
+    initialImage,
+  );
+  const [imageSource, setImageSource] = useState<string | null>(initialImage); // dataURL 或 url
 
   const clearUpload = () => {
     setUploadPreview(null);
@@ -50,4 +59,3 @@ export function useImageUpload(options?: { maxSizeMB?: number }) {
     setImageFromHistory,
   };
 }
-
