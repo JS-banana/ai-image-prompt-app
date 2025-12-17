@@ -1,4 +1,4 @@
-import { createPrompt, getPrompts } from "@/lib/data/prompts";
+import { createPrompt, getPromptOptions, getPrompts } from "@/lib/data/prompts";
 import { describe, expect, it } from "vitest";
 
 type PromptRow = {
@@ -86,6 +86,37 @@ describe("getPrompts", () => {
     expect(prompts[1].category).toBe("demo");
     expect(prompts[1].mode).toBe("fast");
   });
+
+  it("uses modelId as bestSample when sampleUrl is missing", async () => {
+    const client: PromptClient = {
+      prompt: {
+        findMany: async () => [
+          {
+            id: "p1",
+            title: "No sample",
+            tags: JSON.stringify([]),
+            variables: JSON.stringify([]),
+            version: 1,
+            updatedAt: new Date("2024-07-20"),
+            body: "body",
+            versions: [
+              {
+                modelId: "seedream-4.5",
+                modelParams: null,
+                sampleUrl: null,
+              },
+            ],
+          },
+        ],
+        create: async () => ({}),
+      },
+    };
+
+    const prompts = await getPrompts(client as never);
+
+    expect(prompts).toHaveLength(1);
+    expect(prompts[0].bestSample).toBe("seedream-4.5");
+  });
 });
 
 describe("createPrompt", () => {
@@ -119,5 +150,25 @@ describe("createPrompt", () => {
         variables: null,
       },
     });
+  });
+});
+
+describe("getPromptOptions", () => {
+  it("returns prompt id/title/body options", async () => {
+    const client = {
+      prompt: {
+        findMany: async () => [
+          { id: "p1", title: "A", body: "Body A" },
+          { id: "p2", title: "B", body: "Body B" },
+        ],
+      },
+    };
+
+    const options = await getPromptOptions(client as never);
+
+    expect(options).toEqual([
+      { id: "p1", title: "A", body: "Body A" },
+      { id: "p2", title: "B", body: "Body B" },
+    ]);
   });
 });
