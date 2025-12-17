@@ -3,6 +3,8 @@ import { getModelConfigs } from "@/lib/data/models";
 import { getPromptOptions } from "@/lib/data/prompts";
 import { getGenerationGalleryItemByResultId } from "@/lib/data/generations";
 
+export const dynamic = "force-dynamic";
+
 const coerceSearchParam = (value?: string | string[]) =>
   typeof value === "string" ? value : value?.[0];
 
