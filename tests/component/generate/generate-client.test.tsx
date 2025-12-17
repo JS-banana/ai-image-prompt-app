@@ -303,8 +303,6 @@ describe("GenerateClient (MSW)", () => {
       ),
     );
 
-    vi.spyOn(window, "confirm").mockReturnValue(true);
-
     const user = userEvent.setup();
     render(<GenerateClient prompts={PROMPTS} models={[SEEDREAM_MODEL]} />);
 
@@ -320,7 +318,8 @@ describe("GenerateClient (MSW)", () => {
 
     await user.click(within(historyHeader).getByRole("button", { name: "清空" }));
 
-    expect(window.confirm).toHaveBeenCalledWith("确定清空本地生成历史吗？");
+    expect(await screen.findByText("清空生成历史")).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "确认清空" }));
     expect(await screen.findByText(/暂无历史记录/)).toBeInTheDocument();
     expect(localStorage.getItem("seedream-history")).toBeNull();
 
