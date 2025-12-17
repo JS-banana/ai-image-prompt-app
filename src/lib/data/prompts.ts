@@ -34,33 +34,52 @@ export const getPrompts = async (
     },
   });
 
+  const normalizeStringArray = (value: unknown) => {
+    if (!Array.isArray(value)) return [];
+    const seen = new Set<string>();
+    const out: string[] = [];
+    for (const item of value) {
+      if (typeof item !== "string") continue;
+      const v = item.trim();
+      if (!v) continue;
+      if (seen.has(v)) continue;
+      seen.add(v);
+      out.push(v);
+    }
+    return out;
+  };
+
   const parseArray = (value?: string | null) => {
     if (!value) return [];
     try {
-      const parsed = JSON.parse(value);
-      return Array.isArray(parsed) ? parsed : [];
+      return normalizeStringArray(JSON.parse(value));
     } catch {
       return [];
     }
   };
 
-  return data.map((item) => ({
-    id: item.id,
-    title: item.title,
-    tags: parseArray(item.tags),
-    variables: parseArray(item.variables),
-    version: item.version,
-    updatedAt: item.updatedAt.toISOString().slice(0, 10),
-    body: item.body,
-    author: item.author,
-    link: item.link,
-    preview: item.preview,
-    category: item.category,
-    mode: item.mode,
-    bestSample: item.versions[0]
-      ? `${item.versions[0].modelId} · ${item.versions[0].sampleUrl ?? ""}`.trim()
-      : undefined,
-  }));
+  return data.map((item) => {
+    const version = item.versions[0];
+    return {
+      id: item.id,
+      title: item.title,
+      tags: parseArray(item.tags),
+      variables: parseArray(item.variables),
+      version: item.version,
+      updatedAt: item.updatedAt.toISOString().slice(0, 10),
+      body: item.body,
+      author: item.author,
+      link: item.link,
+      preview: item.preview,
+      category: item.category,
+      mode: item.mode,
+      bestSample: version
+        ? version.sampleUrl
+          ? `${version.modelId} · ${version.sampleUrl}`
+          : version.modelId
+        : undefined,
+    };
+  });
 };
 
 export const createPrompt = async (
