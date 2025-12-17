@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   getGenerationGallery,
   getGenerationGalleryPage,
+  getGenerationGalleryItemByResultId,
   persistGeneration,
 } from "@/lib/data/generations";
 
@@ -222,6 +223,73 @@ describe("getGenerationGalleryPage", () => {
       skip: 1,
       cursor: { id: "res-1" },
       where: { status: "ERROR" },
+    });
+  });
+});
+
+describe("getGenerationGalleryItemByResultId", () => {
+  it("returns null for blank ids", async () => {
+    const client = {
+      generationResult: {
+        findUnique: async () => {
+          throw new Error("should not be called");
+        },
+      },
+    };
+
+    const item = await getGenerationGalleryItemByResultId("   ", client as never);
+    expect(item).toBeNull();
+  });
+
+  it("returns null when prisma returns no result", async () => {
+    const client = {
+      generationResult: {
+        findUnique: async () => null,
+      },
+    };
+
+    const item = await getGenerationGalleryItemByResultId("res-1", client as never);
+    expect(item).toBeNull();
+  });
+
+  it("maps the prisma row into a gallery item", async () => {
+    const client = {
+      generationResult: {
+        findUnique: async () => ({
+          id: "res-1",
+          status: "SUCCESS",
+          error: null,
+          imageUrl: "https://example.com/generated.png",
+          modelId: "seedream-ark",
+          createdAt: new Date("2025-12-03T00:00:00.000Z"),
+          request: {
+            id: "req-1",
+            models: JSON.stringify(["seedream-ark"]),
+            paramsOverride: JSON.stringify({
+              prompt: "prompt from params",
+              size: "2K",
+              model: "Seedream 4.5",
+              modelIds: ["seedream-ark"],
+              hasImageInput: false,
+            }),
+            prompt: { body: "from db prompt" },
+          },
+        }),
+      },
+    };
+
+    const item = await getGenerationGalleryItemByResultId("res-1", client as never);
+
+    expect(item).toMatchObject({
+      requestId: "req-1",
+      resultId: "res-1",
+      status: "SUCCESS",
+      imageUrl: "https://example.com/generated.png",
+      prompt: "prompt from params",
+      size: "2K",
+      model: "Seedream 4.5",
+      modelIds: ["seedream-ark"],
+      hasImageInput: false,
     });
   });
 });

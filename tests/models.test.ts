@@ -55,6 +55,40 @@ describe("getModelConfigs", () => {
     expect(configs[1].createdAt).toBe("2024-01-15");
     expect(configs[1].defaults).toBeUndefined();
   });
+
+  it("handles empty defaults and empty sizePresets", async () => {
+    const client: ModelClient = {
+      modelConfig: {
+        findMany: async () => [
+          {
+            id: "a",
+            provider: "seedream",
+            modelName: "seedream-empty",
+            defaults: null,
+            createdAt: new Date("2024-06-02"),
+          },
+          {
+            id: "b",
+            provider: "seedream",
+            modelName: "seedream-empty-presets",
+            defaults: JSON.stringify({ sizePresets: [123, "   "] }),
+            createdAt: new Date("2024-01-15"),
+          },
+        ],
+        create: async () => ({}),
+      },
+    };
+
+    const configs = await getModelConfigs(client as never);
+
+    expect(configs).toHaveLength(2);
+    expect(configs[0].defaults).toBeUndefined();
+    expect(configs[0].sizePresets).toBeUndefined();
+    expect(configs[0].resolution).toBeUndefined();
+
+    expect(configs[1].defaults).toEqual({ sizePresets: [123, "   "] });
+    expect(configs[1].sizePresets).toBeUndefined();
+  });
 });
 
 describe("createModelConfig", () => {
