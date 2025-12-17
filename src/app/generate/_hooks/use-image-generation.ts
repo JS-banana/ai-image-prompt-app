@@ -100,16 +100,25 @@ export function useImageGeneration({
         throw new Error(data?.error || `生成失败（HTTP ${resp.status}）`);
       }
 
+      const requestId =
+        typeof data?.requestId === "string" ? data.requestId.trim() : "";
+      const resultId =
+        typeof data?.resultId === "string" ? data.resultId.trim() : "";
+
       const nextResult: GenerationResult = {
         modelLabel: modelLookup.get(seedreamModels[0] ?? "") ?? SEEDREAM_MODEL_LABEL,
         imageUrl: data.imageUrl ?? null,
         raw: data.raw,
+        requestId: requestId || undefined,
+        resultId: resultId || undefined,
       };
       setResult(nextResult);
 
       const createdAt = Date.now();
       const historyItem: HistoryItem = {
-        id: `${createdAt}`,
+        id: resultId || `${createdAt}`,
+        requestId: requestId || undefined,
+        resultId: resultId || undefined,
         prompt: trimmed,
         modelLabel: nextResult.modelLabel,
         size,
@@ -142,4 +151,3 @@ export function useImageGeneration({
     generate,
   };
 }
-

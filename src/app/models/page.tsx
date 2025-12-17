@@ -2,6 +2,8 @@ import { createModelConfigAction } from "@/app/models/actions";
 import { AdminWriteGate } from "@/components/admin-write-gate";
 import { getModelConfigs } from "@/lib/data/models";
 
+export const dynamic = "force-dynamic";
+
 const formatModelName = (name: string) =>
   name.replace(/[_-]+/g, " ").trim() || name;
 

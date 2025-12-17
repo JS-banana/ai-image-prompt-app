@@ -1,9 +1,19 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { forwardRef, useState } from "react";
 import type { GenerationResult, HistoryItem } from "@/app/generate/_types";
 import { getAspectRatioFromSize } from "../_domain/seedream";
+import { CopyButton } from "@/components/copy-button";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
 type PreviewPanelProps = {
   loading: boolean;
@@ -40,11 +50,15 @@ export const PreviewPanel = forwardRef<HTMLDivElement, PreviewPanelProps>(
     const [resultAspectByUrl, setResultAspectByUrl] = useState<
       Record<string, string>
     >({});
+    const [clearHistoryDialogOpen, setClearHistoryDialogOpen] = useState(false);
 
     const shouldShowResultPanel = loading || hasGenerated || !!result;
     const aspectRatio = result?.imageUrl
       ? (resultAspectByUrl[result.imageUrl] ?? fallbackAspectRatio)
       : fallbackAspectRatio;
+    const downloadHref = result?.resultId
+      ? `/api/generations/${encodeURIComponent(result.resultId)}/download`
+      : result?.imageUrl ?? "";
 
     return (
       <div className="space-y-4 md:sticky md:top-4" ref={ref}>
@@ -95,14 +109,28 @@ export const PreviewPanel = forwardRef<HTMLDivElement, PreviewPanelProps>(
                   {result.imageUrl ? (
                     <div className="mt-2 flex items-center gap-3">
                       <a
-                        href={result.imageUrl}
-                        download="seedream.png"
+                        href={downloadHref}
+                        download={
+                          result.resultId ? `seedream-${result.resultId}.png` : "seedream.png"
+                        }
                         className="rounded-full border border-slate-200 px-3 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-100"
                       >
                         下载
                       </a>
+                      <a
+                        href={result.imageUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="rounded-full border border-slate-200 px-3 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-100"
+                      >
+                        打开原图
+                      </a>
+                      <CopyButton text={result.imageUrl} label="复制链接" />
                     </div>
                   ) : null}
+                  <p className="mt-2 text-[11px] text-slate-500">
+                    图片 URL 可能过期，建议生成后尽快下载到本地保存。
+                  </p>
                 </div>
               </article>
             ) : loading ? (
@@ -117,29 +145,71 @@ export const PreviewPanel = forwardRef<HTMLDivElement, PreviewPanelProps>(
           </div>
         ) : null}
 
-        <div className="space-y-3 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-          <div className="flex items-center justify-between">
-            <h2 className="text-sm font-semibold text-slate-900">生成历史</h2>
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={onExportHistory}
-                disabled={imageHistory.length === 0}
-                className="rounded-full border border-slate-200 bg-white px-3 py-1 text-[11px] font-semibold text-slate-700 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-60"
-                title="导出仅保存元数据与 URL，URL 可能过期"
-              >
-                导出 JSON
-              </button>
-              <button
-                type="button"
-                onClick={onClearHistory}
-                disabled={imageHistory.length === 0}
-                className="rounded-full border border-slate-200 bg-white px-3 py-1 text-[11px] font-semibold text-slate-700 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                清空
-              </button>
+	          <div className="space-y-3 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+	            <div className="flex items-center justify-between">
+	              <h2 className="text-sm font-semibold text-slate-900">生成历史</h2>
+	              <div className="flex items-center gap-2">
+                <Link
+                  href="/gallery"
+                  className="rounded-full border border-slate-200 bg-white px-3 py-1 text-[11px] font-semibold text-slate-700 hover:bg-slate-100"
+                >
+                  打开库
+                </Link>
+                <button
+                  type="button"
+                  onClick={onExportHistory}
+                  disabled={imageHistory.length === 0}
+                  className="rounded-full border border-slate-200 bg-white px-3 py-1 text-[11px] font-semibold text-slate-700 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-60"
+                  title="导出仅保存元数据与 URL，URL 可能过期"
+                >
+                  导出 JSON
+                </button>
+
+                <Dialog
+                  open={clearHistoryDialogOpen}
+                  onOpenChange={setClearHistoryDialogOpen}
+                >
+                  <DialogTrigger asChild>
+                    <button
+                      type="button"
+                      disabled={imageHistory.length === 0}
+                      className="rounded-full border border-slate-200 bg-white px-3 py-1 text-[11px] font-semibold text-slate-700 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-60"
+                    >
+                      清空
+                    </button>
+                  </DialogTrigger>
+                  <DialogContent className="w-[min(92vw,28rem)]">
+                    <div className="space-y-2">
+                      <DialogTitle>清空生成历史</DialogTitle>
+                      <DialogDescription>
+                        这会删除本地浏览器中保存的生成历史（最多 12 条），不可恢复。
+                      </DialogDescription>
+                    </div>
+
+                    <div className="mt-6 flex justify-end gap-2">
+                      <DialogClose asChild>
+                        <button
+                          type="button"
+                          className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:border-slate-300"
+                        >
+                          取消
+                        </button>
+                      </DialogClose>
+                      <button
+                        type="button"
+                        className="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700"
+                        onClick={() => {
+                          onClearHistory();
+                          setClearHistoryDialogOpen(false);
+                        }}
+                      >
+                        确认清空
+                      </button>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+              </div>
             </div>
-          </div>
           {!historyLoaded ? (
             <div className="rounded-lg border border-dashed border-slate-200 bg-slate-50 p-4 text-xs text-slate-600">
               加载中...
@@ -201,8 +271,12 @@ export const PreviewPanel = forwardRef<HTMLDivElement, PreviewPanelProps>(
                     {item.imageUrl ? (
                       <>
                         <a
-                          href={item.imageUrl}
-                          download={`seedream-${item.id}.png`}
+                          href={
+                            item.resultId
+                              ? `/api/generations/${encodeURIComponent(item.resultId)}/download`
+                              : item.imageUrl
+                          }
+                          download={`seedream-${item.resultId ?? item.id}.png`}
                           className="rounded-full border border-slate-200 px-3 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-100"
                         >
                           下载

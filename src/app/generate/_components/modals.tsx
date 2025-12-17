@@ -42,7 +42,10 @@ export function GenerateModals({
           if (!open) onCloseExpandedPrompt();
         }}
       >
-        <DialogContent className="w-[min(92vw,42rem)]">
+        <DialogContent
+          aria-describedby={undefined}
+          className="w-[min(92vw,42rem)]"
+        >
           <div className="mb-4 flex items-center justify-between">
             <DialogTitle>完整提示词</DialogTitle>
             <DialogClose asChild>
@@ -82,7 +85,10 @@ export function GenerateModals({
           if (!open) onClosePreviewImage();
         }}
       >
-        <DialogContent className="w-[min(92vw,56rem)] overflow-hidden p-0">
+        <DialogContent
+          aria-describedby={undefined}
+          className="w-[min(92vw,56rem)] overflow-hidden p-0"
+        >
           <div className="relative w-full overflow-hidden rounded-2xl bg-white shadow-2xl">
             <DialogTitle className="sr-only">图片预览</DialogTitle>
             <DialogClose asChild>

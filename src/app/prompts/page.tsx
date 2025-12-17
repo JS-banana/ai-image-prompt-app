@@ -4,6 +4,8 @@ import { AdminWriteGate } from "@/components/admin-write-gate";
 import { PromptBody } from "@/components/prompt-body";
 import Image from "next/image";
 
+export const dynamic = "force-dynamic";
+
 const getDomainIcon = (link?: string | null) => {
   if (!link) return null;
   try {

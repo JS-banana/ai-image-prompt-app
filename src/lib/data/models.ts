@@ -10,8 +10,10 @@ export type ModelConfigItem = {
   createdAt: string;
 };
 
-export const getModelConfigs = async (): Promise<ModelConfigItem[]> => {
-  const list = await prisma.modelConfig.findMany({
+export const getModelConfigs = async (
+  client = prisma,
+): Promise<ModelConfigItem[]> => {
+  const list = await client.modelConfig.findMany({
     orderBy: { createdAt: "desc" },
   });
 
@@ -55,13 +57,16 @@ export const getModelConfigs = async (): Promise<ModelConfigItem[]> => {
   });
 };
 
-export const createModelConfig = async (input: {
-  provider: string;
-  modelName: string;
-  defaults?: Record<string, unknown>;
-  apiKeyRef?: string;
-}) => {
-  return prisma.modelConfig.create({
+export const createModelConfig = async (
+  input: {
+    provider: string;
+    modelName: string;
+    defaults?: Record<string, unknown>;
+    apiKeyRef?: string;
+  },
+  client = prisma,
+) => {
+  return client.modelConfig.create({
     data: {
       provider: input.provider,
       modelName: input.modelName,
