@@ -46,7 +46,8 @@ jobs:
     runs-on: ubuntu-latest
     needs: quality
     env:
-      DATABASE_URL: file:./.tmp/test.db
+      # 使用绝对路径，避免 Prisma CLI（schema 相对路径）与运行时（项目根相对路径改写）指向不同 SQLite 文件
+      DATABASE_URL: "file:${{ github.workspace }}/.tmp/test.db"
     steps:
       - uses: actions/checkout@v4
 
