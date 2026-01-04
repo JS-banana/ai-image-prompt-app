@@ -1,11 +1,37 @@
 import Link from "next/link";
-import PromptWorkbench from "./_components/prompt-workbench";
 import { getHomeSnapshot } from "@/lib/data/home-snapshot";
+import { getModelConfigs } from "@/lib/data/models";
+import { getPromptOptions } from "@/lib/data/prompts";
+import HomeGenerateWorkbench from "./_components/home-generate-workbench";
 import { HomeRecentStrip } from "./_components/home-recent-strip";
 import { HomePromptHighlights } from "./_components/home-prompt-highlights";
 
 export default async function Home() {
+  const prompts = await getPromptOptions();
+  const models = await getModelConfigs();
   const { recentGenerations, promptHighlights } = await getHomeSnapshot();
+
+  const seedreamModel = {
+    id: "seedream-ark",
+    provider: "Seedream",
+    modelName: "Seedream 4.5",
+    resolution: "2K",
+    sizePresets: ["2K", "4K"],
+    defaults: { size: "2K", sizePresets: ["2K", "4K"] },
+    createdAt: "",
+  };
+
+  const filtered = models.filter(
+    (m) =>
+      !m.modelName.toLowerCase().includes("dreamseed4.0") &&
+      !m.modelName.toLowerCase().includes("dreamseed 4.0"),
+  );
+
+  const mergedModels = filtered.some((m) =>
+    `${m.provider} ${m.modelName}`.toLowerCase().includes("seedream"),
+  )
+    ? filtered
+    : [seedreamModel, ...filtered];
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-[var(--glint-ivory)] text-[var(--glint-ink)]">
@@ -65,7 +91,7 @@ export default async function Home() {
               细腻材质与色彩控制，让输入像在画布上作画。
             </p>
           </div>
-          <PromptWorkbench />
+          <HomeGenerateWorkbench prompts={prompts} models={mergedModels} />
         </section>
 
         <section
