@@ -22,7 +22,13 @@ import { useImageGeneration } from "./_hooks/use-image-generation";
 import { useImageUpload } from "./_hooks/use-image-upload";
 import { useSeedreamHistory } from "./_hooks/use-seedream-history";
 
-export function GenerateClient({ prompts, models, prefill }: GenerateClientProps) {
+export function GenerateClient({
+  prompts,
+  models,
+  prefill,
+  variant = "classic",
+  showHeader = true,
+}: GenerateClientProps) {
   const defaultSeedream = models.find((m) => isSeedreamModel(m));
   const initialPrompt = typeof prefill?.prompt === "string" ? prefill.prompt : "";
   const initialSize = typeof prefill?.size === "string" ? prefill.size.trim() : "";
@@ -274,11 +280,12 @@ export function GenerateClient({ prompts, models, prefill }: GenerateClientProps
   return (
     <>
       <div className="space-y-6">
-        <GenerateHeader />
+        {showHeader ? <GenerateHeader variant={variant} /> : null}
 
         <section className="grid gap-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
           <div className="grid gap-4 md:grid-cols-[1.15fr,0.85fr]">
             <WorkbenchPanel
+              variant={variant}
               prompt={{
                 value: promptText,
                 onChange: setPromptText,
@@ -338,6 +345,7 @@ export function GenerateClient({ prompts, models, prefill }: GenerateClientProps
             />
 
             <PreviewPanel
+              variant={variant}
               ref={previewRef}
               loading={loading}
               hasGenerated={hasGenerated}

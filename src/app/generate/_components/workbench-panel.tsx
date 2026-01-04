@@ -1,7 +1,12 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import type { ActiveMenu, ApiKeyStatus, SizeOrientation } from "@/app/generate/_types";
+import type {
+  ActiveMenu,
+  ApiKeyStatus,
+  GenerateSurfaceVariant,
+  SizeOrientation,
+} from "@/app/generate/_types";
 import { Dialog, DialogClose, DialogContent, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import type { ModelConfigItem } from "@/lib/data/models";
 import type { PromptOption } from "@/lib/data/prompts";
@@ -379,6 +384,7 @@ function SizePicker({
 }
 
 type WorkbenchPanelProps = {
+  variant?: GenerateSurfaceVariant;
   prompt: {
     value: string;
     onChange: (value: string) => void;
@@ -429,6 +435,7 @@ type WorkbenchPanelProps = {
 };
 
 export function WorkbenchPanel({
+  variant = "classic",
   prompt,
   upload,
   model,
@@ -462,11 +469,16 @@ export function WorkbenchPanel({
     );
   }, [prompt.options, prompt.search]);
 
+  const promptCardClass =
+    variant === "glint"
+      ? "relative rounded-2xl border border-slate-200 bg-slate-50/60 p-4 shadow-inner"
+      : "relative rounded-2xl border border-slate-200 bg-slate-50/60 p-4 shadow-inner";
+
   return (
     <div className="space-y-4">
       <div className="space-y-2">
         <label className="text-sm font-semibold text-slate-800">提示词工作台</label>
-        <div className="relative rounded-2xl border border-slate-200 bg-slate-50/60 p-4 shadow-inner">
+        <div className={promptCardClass}>
           <div className="flex items-center justify-between pb-3">
             <span className="text-xs font-semibold uppercase tracking-widest text-slate-500">
               Prompt

@@ -1,8 +1,16 @@
 "use client";
 
-export function GenerateHeader() {
+import type { GenerateSurfaceVariant } from "@/app/generate/_types";
+
+export function GenerateHeader({
+  variant = "classic",
+}: {
+  variant?: GenerateSurfaceVariant;
+}) {
+  const headerClass = variant === "glint" ? "space-y-3" : "space-y-3";
+
   return (
-    <header className="space-y-3">
+    <header className={headerClass}>
       <p className="text-xs font-semibold uppercase tracking-widest text-slate-500">
         Multi-Model Run
       </p>
@@ -15,4 +23,3 @@ export function GenerateHeader() {
     </header>
   );
 }
-

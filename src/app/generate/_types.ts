@@ -8,10 +8,14 @@ export type GenerateClientPrefill = {
   imageUrl?: string | null;
 };
 
+export type GenerateSurfaceVariant = "classic" | "glint";
+
 export type GenerateClientProps = {
   prompts: PromptOption[];
   models: ModelConfigItem[];
   prefill?: GenerateClientPrefill;
+  variant?: GenerateSurfaceVariant;
+  showHeader?: boolean;
 };
 
 export type GenerationResult = {

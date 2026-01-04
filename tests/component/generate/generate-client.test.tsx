@@ -505,4 +505,16 @@ describe("GenerateClient (MSW)", () => {
 
     expect(await screen.findByText(/Key 浏览器/)).toBeInTheDocument();
   });
+
+  it("can hide header for embedded use", () => {
+    render(
+      <GenerateClient
+        prompts={PROMPTS}
+        models={[SEEDREAM_MODEL]}
+        showHeader={false}
+      />,
+    );
+
+    expect(screen.queryByText(/一键多模型对比/i)).not.toBeInTheDocument();
+  });
 });

@@ -3,7 +3,11 @@
 import Image from "next/image";
 import Link from "next/link";
 import { forwardRef, useState } from "react";
-import type { GenerationResult, HistoryItem } from "@/app/generate/_types";
+import type {
+  GenerateSurfaceVariant,
+  GenerationResult,
+  HistoryItem,
+} from "@/app/generate/_types";
 import { getAspectRatioFromSize } from "../_domain/seedream";
 import { CopyButton } from "@/components/copy-button";
 import {
@@ -16,6 +20,7 @@ import {
 } from "@/components/ui/dialog";
 
 type PreviewPanelProps = {
+  variant?: GenerateSurfaceVariant;
   loading: boolean;
   hasGenerated: boolean;
   result: GenerationResult | null;
@@ -32,6 +37,7 @@ type PreviewPanelProps = {
 export const PreviewPanel = forwardRef<HTMLDivElement, PreviewPanelProps>(
   function PreviewPanel(
     {
+      variant = "classic",
       loading,
       hasGenerated,
       result,
@@ -52,6 +58,11 @@ export const PreviewPanel = forwardRef<HTMLDivElement, PreviewPanelProps>(
     >({});
     const [clearHistoryDialogOpen, setClearHistoryDialogOpen] = useState(false);
 
+    const panelClass =
+      variant === "glint"
+        ? "space-y-3 rounded-xl border border-slate-200 bg-white p-4 shadow-sm"
+        : "space-y-3 rounded-xl border border-slate-200 bg-white p-4 shadow-sm";
+
     const shouldShowResultPanel = loading || hasGenerated || !!result;
     const aspectRatio = result?.imageUrl
       ? (resultAspectByUrl[result.imageUrl] ?? fallbackAspectRatio)
@@ -63,7 +74,7 @@ export const PreviewPanel = forwardRef<HTMLDivElement, PreviewPanelProps>(
     return (
       <div className="space-y-4 md:sticky md:top-4" ref={ref}>
         {shouldShowResultPanel ? (
-          <div className="space-y-3 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+          <div className={panelClass}>
             <div className="flex items-center justify-between">
               <h2 className="text-sm font-semibold text-slate-900">生成结果</h2>
               <span className="text-[11px] text-slate-500">
