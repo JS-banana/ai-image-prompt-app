@@ -36,12 +36,28 @@ test("renders cards and fires callbacks", async () => {
   );
 
   expect(screen.getByText(/生成画廊/)).toBeInTheDocument();
-  await user.click(screen.getByRole("button", { name: "查看" }));
-  expect(onPreview).toHaveBeenCalledWith(ITEMS[0]);
-
   await user.click(screen.getByRole("button", { name: "编辑" }));
   expect(onEdit).toHaveBeenCalledWith(ITEMS[0]);
 
   await user.click(screen.getByRole("button", { name: "下载" }));
   expect(onDownload).toHaveBeenCalledWith(ITEMS[0]);
+
+  await user.click(screen.getByRole("button", { name: "查看" }));
+  expect(onPreview).toHaveBeenCalledWith(ITEMS[0]);
+});
+
+test("opens lightbox preview", async () => {
+  const user = userEvent.setup();
+  render(
+    <UnifiedGalleryStrip
+      title="生成画廊"
+      items={ITEMS}
+      onPreview={vi.fn()}
+      onEdit={vi.fn()}
+      onDownload={vi.fn()}
+    />,
+  );
+
+  await user.click(screen.getByRole("button", { name: "查看" }));
+  expect(await screen.findByText(/进入画廊/)).toBeInTheDocument();
 });
