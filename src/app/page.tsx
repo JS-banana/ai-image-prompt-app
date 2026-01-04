@@ -33,9 +33,14 @@ export default function Home() {
     <div className="relative min-h-screen overflow-hidden bg-[var(--glint-ivory)] text-[var(--glint-ink)]">
       <div className="pointer-events-none absolute inset-0 glint-bloom" />
       <div className="pointer-events-none absolute inset-0 glint-noise" />
+      <div className="pointer-events-none absolute -left-24 top-16 h-64 w-64 rounded-full bg-[rgba(216,181,108,0.25)] blur-3xl motion-reduce:opacity-40 motion-reduce:blur-2xl animate-[glint-drift_18s_ease-in-out_infinite]" />
+      <div className="pointer-events-none absolute -right-32 top-40 h-72 w-72 rounded-full bg-[rgba(95,126,144,0.22)] blur-3xl motion-reduce:opacity-40 motion-reduce:blur-2xl animate-[glint-drift_22s_ease-in-out_infinite]" />
 
       <main className="relative mx-auto flex max-w-6xl flex-col gap-16 px-6 pb-24 pt-16">
-        <section className="grid gap-6">
+        <section
+          className="grid gap-6 opacity-0 motion-reduce:opacity-100 motion-reduce:animate-none animate-[glint-fade-up_0.9s_ease_forwards]"
+          style={{ animationDelay: "0.05s" }}
+        >
           <div className="flex flex-wrap items-center gap-4 text-[11px] uppercase tracking-[0.4em] text-[var(--glint-muted)]">
             <span className="font-display text-[var(--glint-ink)]">
               GLINT LAB
@@ -67,7 +72,10 @@ export default function Home() {
           </div>
         </section>
 
-        <section className="grid gap-6">
+        <section
+          className="grid gap-6 opacity-0 motion-reduce:opacity-100 motion-reduce:animate-none animate-[glint-fade-up_0.9s_ease_forwards]"
+          style={{ animationDelay: "0.16s" }}
+        >
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
               <p className="text-[11px] uppercase tracking-[0.36em] text-[var(--glint-muted)]">
@@ -82,7 +90,10 @@ export default function Home() {
           <PromptWorkbench />
         </section>
 
-        <section className="grid gap-8">
+        <section
+          className="grid gap-8 opacity-0 motion-reduce:opacity-100 motion-reduce:animate-none animate-[glint-fade-up_0.9s_ease_forwards]"
+          style={{ animationDelay: "0.28s" }}
+        >
           <div className="flex flex-wrap items-end justify-between gap-4">
             <div>
               <p className="text-[11px] uppercase tracking-[0.36em] text-[var(--glint-muted)]">
@@ -102,7 +113,7 @@ export default function Home() {
             {galleryStrip.map((item) => (
               <div
                 key={item.title}
-                className="group min-w-[220px] rounded-[24px] border border-white/70 bg-white/60 p-4 shadow-[0_18px_40px_-30px_rgba(42,42,36,0.6)] transition hover:-translate-y-1"
+                className="group min-w-[220px] rounded-[24px] border border-white/70 bg-white/60 p-4 shadow-[0_18px_40px_-30px_rgba(42,42,36,0.6)] transition hover:-translate-y-1 hover:border-white hover:shadow-[0_24px_50px_-32px_rgba(42,42,36,0.7)]"
               >
                 <div
                   className="h-28 w-full rounded-2xl border border-white/60"
