@@ -60,7 +60,7 @@ export const PreviewPanel = forwardRef<HTMLDivElement, PreviewPanelProps>(
 
     const panelClass =
       variant === "glint"
-        ? "space-y-3 rounded-xl border border-slate-200 bg-white p-4 shadow-sm"
+        ? "space-y-3 rounded-[24px] border border-white/70 bg-white/70 p-4 shadow-[0_18px_50px_-35px_rgba(30,40,20,0.5)]"
         : "space-y-3 rounded-xl border border-slate-200 bg-white p-4 shadow-sm";
 
     const shouldShowResultPanel = loading || hasGenerated || !!result;
@@ -156,7 +156,7 @@ export const PreviewPanel = forwardRef<HTMLDivElement, PreviewPanelProps>(
           </div>
         ) : null}
 
-	          <div className="space-y-3 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+          <div className={panelClass}>
 	            <div className="flex items-center justify-between">
 	              <h2 className="text-sm font-semibold text-slate-900">生成历史</h2>
 	              <div className="flex items-center gap-2">

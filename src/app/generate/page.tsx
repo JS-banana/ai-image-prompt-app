@@ -58,8 +58,20 @@ export default async function GeneratePage({
     : undefined;
 
   return (
-    <div className="mx-auto flex max-w-6xl flex-col gap-8 px-6 py-10">
-      <GenerateClient prompts={prompts} models={mergedModels} prefill={prefill} />
+    <div className="relative min-h-screen overflow-hidden bg-[var(--glint-ivory)] text-[var(--glint-ink)]">
+      <div className="pointer-events-none absolute inset-0 glint-bloom" />
+      <div className="pointer-events-none absolute inset-0 glint-noise" />
+      <div className="pointer-events-none absolute -left-24 top-10 h-64 w-64 rounded-full bg-[rgba(216,181,108,0.22)] blur-3xl motion-reduce:opacity-40 motion-reduce:blur-2xl animate-[glint-drift_18s_ease-in-out_infinite]" />
+      <div className="pointer-events-none absolute -right-32 top-32 h-72 w-72 rounded-full bg-[rgba(95,126,144,0.2)] blur-3xl motion-reduce:opacity-40 motion-reduce:blur-2xl animate-[glint-drift_22s_ease-in-out_infinite]" />
+
+      <main className="relative mx-auto flex max-w-6xl flex-col gap-8 px-6 pb-24 pt-16">
+        <GenerateClient
+          prompts={prompts}
+          models={mergedModels}
+          prefill={prefill}
+          variant="glint"
+        />
+      </main>
     </div>
   );
 }

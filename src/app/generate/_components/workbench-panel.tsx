@@ -469,36 +469,54 @@ export function WorkbenchPanel({
     );
   }, [prompt.options, prompt.search]);
 
-  const promptCardClass =
-    variant === "glint"
-      ? "relative rounded-2xl border border-slate-200 bg-slate-50/60 p-4 shadow-inner"
-      : "relative rounded-2xl border border-slate-200 bg-slate-50/60 p-4 shadow-inner";
+  const isGlint = variant === "glint";
+  const promptCardClass = isGlint
+    ? "relative rounded-2xl border border-white/70 bg-white/70 p-4 shadow-[0_18px_50px_-35px_rgba(30,40,20,0.5)]"
+    : "relative rounded-2xl border border-slate-200 bg-slate-50/60 p-4 shadow-inner";
+  const labelClass = isGlint
+    ? "text-sm font-semibold text-[var(--glint-ink)]"
+    : "text-sm font-semibold text-slate-800";
+  const promptTagClass = isGlint
+    ? "text-xs font-semibold uppercase tracking-widest text-[var(--glint-muted)]"
+    : "text-xs font-semibold uppercase tracking-widest text-slate-500";
+  const chipClass = isGlint
+    ? "rounded-full border border-white/70 bg-white/60 px-3 py-1 font-semibold text-[var(--glint-muted)] hover:bg-white"
+    : "rounded-full border border-slate-200 px-3 py-1 font-semibold hover:bg-white";
+  const textareaClass = isGlint
+    ? "h-56 w-full resize-none rounded-xl border border-[#E7E0D2] bg-white/80 px-3 py-2 text-sm text-[var(--glint-ink)] outline-none ring-1 ring-transparent transition focus:border-[#C89B73] focus:ring-[#E6C887]"
+    : "h-56 w-full resize-none rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none ring-1 ring-transparent transition focus:border-slate-300 focus:ring-slate-200";
+  const metaClass = isGlint
+    ? "text-[11px] text-[var(--glint-muted)]"
+    : "text-[11px] text-slate-500";
+  const generateButtonClass = isGlint
+    ? "rounded-full bg-gradient-to-r from-[rgba(216,181,108,0.95)] to-[rgba(230,200,135,0.95)] px-5 py-2 text-xs font-semibold uppercase tracking-[0.24em] text-[var(--glint-ink)] shadow-[0_18px_40px_-28px_rgba(42,42,36,0.7)] transition disabled:cursor-not-allowed disabled:opacity-70"
+    : "rounded-full bg-slate-900 px-5 py-2 text-sm font-semibold text-white shadow transition disabled:cursor-not-allowed disabled:opacity-70";
 
   return (
     <div className="space-y-4">
       <div className="space-y-2">
-        <label className="text-sm font-semibold text-slate-800">提示词工作台</label>
+        <label className={labelClass}>提示词工作台</label>
         <div className={promptCardClass}>
           <div className="flex items-center justify-between pb-3">
-            <span className="text-xs font-semibold uppercase tracking-widest text-slate-500">
+            <span className={promptTagClass}>
               Prompt
             </span>
             <div className="flex items-center gap-2 text-xs text-slate-600">
               <button
                 type="button"
                 onClick={() => prompt.onChange("")}
-                className="rounded-full border border-slate-200 px-3 py-1 font-semibold hover:bg-white"
+                className={chipClass}
               >
                 清空
               </button>
               <button
                 type="button"
                 onClick={() => navigator.clipboard.writeText(prompt.value || "")}
-                className="rounded-full border border-slate-200 px-3 py-1 font-semibold hover:bg-white"
+                className={chipClass}
               >
                 复制
               </button>
-              <label className="flex cursor-pointer items-center gap-1 rounded-full border border-slate-200 px-3 py-1 font-semibold hover:bg-white">
+              <label className={`${chipClass} flex cursor-pointer items-center gap-1`}>
                 上传
                 <input
                   type="file"
@@ -515,7 +533,7 @@ export function WorkbenchPanel({
           <textarea
             value={prompt.value}
             onChange={(e) => prompt.onChange(e.target.value)}
-            className="h-56 w-full resize-none rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none ring-1 ring-transparent transition focus:border-slate-300 focus:ring-slate-200"
+            className={textareaClass}
             placeholder="可直接输入，或通过右下角图标从提示词库/模型/分辨率入口快速选择"
           />
 
@@ -541,7 +559,7 @@ export function WorkbenchPanel({
           ) : null}
 
           <div className="mt-2 flex items-center justify-between">
-            <div className="text-[11px] text-slate-500">
+            <div className={metaClass}>
               {prompt.value.length} 字 · {selectedModelLabel} · 分辨率{" "}
               {sizeMeta.labelTier}（{sizeMeta.ratio} · {sizeMeta.labelDims}） · Key{" "}
               {apiKey.sourceLabel}
@@ -857,7 +875,7 @@ export function WorkbenchPanel({
             type="button"
             disabled={generate.loading}
             onClick={generate.onGenerate}
-            className="rounded-full bg-slate-900 px-5 py-2 text-sm font-semibold text-white shadow transition disabled:cursor-not-allowed disabled:opacity-70"
+            className={generateButtonClass}
           >
             {generate.loading ? "生成中..." : "生成"}
           </button>

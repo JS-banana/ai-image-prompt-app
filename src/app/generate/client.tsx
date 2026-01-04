@@ -277,12 +277,17 @@ export function GenerateClient({
     setError(null);
   };
 
+  const surfaceClass =
+    variant === "glint"
+      ? "grid gap-6 rounded-[28px] border border-white/70 bg-white/70 p-6 shadow-[0_30px_80px_-50px_rgba(30,40,20,0.5)] backdrop-blur"
+      : "grid gap-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm";
+
   return (
     <>
       <div className="space-y-6">
         {showHeader ? <GenerateHeader variant={variant} /> : null}
 
-        <section className="grid gap-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+        <section className={surfaceClass}>
           <div className="grid gap-4 md:grid-cols-[1.15fr,0.85fr]">
             <WorkbenchPanel
               variant={variant}
