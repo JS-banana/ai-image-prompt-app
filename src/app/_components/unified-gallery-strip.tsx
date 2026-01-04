@@ -5,9 +5,9 @@ import type { GenerationGalleryItem } from "@/lib/data/generations";
 type UnifiedGalleryStripProps = {
   title: string;
   items: GenerationGalleryItem[];
-  onPreview: (item: GenerationGalleryItem) => void;
-  onEdit: (item: GenerationGalleryItem) => void;
-  onDownload: (item: GenerationGalleryItem) => void;
+  onPreview?: (item: GenerationGalleryItem) => void;
+  onEdit?: (item: GenerationGalleryItem) => void;
+  onDownload?: (item: GenerationGalleryItem) => void;
 };
 
 export function UnifiedGalleryStrip({
@@ -28,13 +28,13 @@ export function UnifiedGalleryStrip({
             key={item.resultId || item.requestId}
             className="min-w-[260px]"
           >
-            <button type="button" onClick={() => onPreview(item)}>
+            <button type="button" onClick={() => onPreview?.(item)}>
               查看
             </button>
-            <button type="button" onClick={() => onDownload(item)}>
+            <button type="button" onClick={() => onDownload?.(item)}>
               下载
             </button>
-            <button type="button" onClick={() => onEdit(item)}>
+            <button type="button" onClick={() => onEdit?.(item)}>
               编辑
             </button>
           </article>
