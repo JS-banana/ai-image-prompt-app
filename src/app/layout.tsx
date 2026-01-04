@@ -1,23 +1,29 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Fraunces, Noto_Sans_SC, Noto_Serif_SC } from "next/font/google";
 import "./globals.css";
 
-const GITHUB_REPO_URL = "https://github.com/JS-banana/ai-image-prompt-app";
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const notoSans = Noto_Sans_SC({
   subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700"],
+  variable: "--font-body",
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const notoSerif = Noto_Serif_SC({
   subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-display",
+});
+
+const fraunces = Fraunces({
+  subsets: ["latin"],
+  weight: ["400", "600"],
+  variable: "--font-accent",
 });
 
 export const metadata: Metadata = {
-  title: "AI Image Workbench",
-  description: "多模型生图对比与 Prompt 管理工作台",
+  title: "GLINT LAB · 温室工作台",
+  description: "色彩丰盈的生图提示词工作台，轻盈而高级的创作体验。",
 };
 
 export default function RootLayout({
@@ -28,50 +34,25 @@ export default function RootLayout({
   return (
     <html lang="zh-CN" suppressHydrationWarning>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-slate-50 text-slate-900`}
+        className={`${notoSans.variable} ${notoSerif.variable} ${fraunces.variable} antialiased bg-[var(--glint-ivory)] text-[var(--glint-ink)]`}
       >
         <div className="min-h-screen">
-          <header className="sticky top-0 z-20 border-b border-slate-200 bg-white/80 backdrop-blur">
+          <header className="sticky top-0 z-30 border-b border-white/70 bg-[rgba(246,241,231,0.85)] backdrop-blur">
             <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-              <Link href="/" className="flex items-center gap-2">
-                <span className="rounded-full bg-slate-900 px-3 py-1 text-xs font-semibold uppercase tracking-widest text-white">
-                  AI Image
+              <Link href="/" className="flex items-center gap-3">
+                <span className="font-display text-sm uppercase tracking-[0.38em] text-[var(--glint-ink)]">
+                  GLINT LAB
                 </span>
-                <span className="text-sm font-semibold text-slate-700">
-                  Workbench
+                <span className="text-[11px] uppercase tracking-[0.32em] text-[var(--glint-muted)]">
+                  Image Studio
                 </span>
               </Link>
-              <nav className="flex items-center gap-4 text-sm font-medium text-slate-700">
-                <Link href="/" className="hover:text-slate-900">
-                  概览
-                </Link>
-                <Link href="/prompts" className="hover:text-slate-900">
-                  Prompts
-                </Link>
-                <Link href="/models" className="hover:text-slate-900">
-                  模型配置
-                </Link>
-                <Link href="/generate" className="hover:text-slate-900">
-                  生成对比
-                </Link>
-                <a
-                  href={GITHUB_REPO_URL}
-                  target="_blank"
-                  rel="noreferrer noopener"
-                  aria-label="GitHub"
-                  title="GitHub"
-                  className="rounded-full p-2 text-slate-600 transition hover:bg-slate-100 hover:text-slate-900"
-                >
-                  <svg
-                    viewBox="0 0 24 24"
-                    className="h-5 w-5"
-                    fill="currentColor"
-                    aria-hidden="true"
-                  >
-                    <path d="M12 1.5c-5.8 0-10.5 4.8-10.5 10.7 0 4.7 3 8.6 7.2 10 .5.1.7-.2.7-.5v-2c-2.9.7-3.5-1.2-3.5-1.2-.5-1.3-1.2-1.6-1.2-1.6-1-.7.1-.7.1-.7 1.1.1 1.7 1.1 1.7 1.1 1 1.7 2.6 1.2 3.2.9.1-.7.4-1.2.7-1.5-2.3-.3-4.8-1.2-4.8-5.2 0-1.1.4-2 .9-2.7-.1-.3-.4-1.3.1-2.7 0 0 .8-.3 2.8 1a9.6 9.6 0 0 1 5.1 0c2-1.3 2.8-1 2.8-1 .5 1.4.2 2.4.1 2.7.6.7 1 1.6 1 2.7 0 4-2.5 4.9-4.8 5.2.4.3.7 1 .7 2v3c0 .3.2.6.7.5 4.2-1.4 7.2-5.3 7.2-10 0-5.9-4.7-10.7-10.5-10.7Z" />
-                  </svg>
-                </a>
-              </nav>
+              <Link
+                href="/generate"
+                className="rounded-full border border-[rgba(200,155,115,0.35)] bg-white/70 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-[var(--glint-ink)] shadow-[0_12px_30px_-20px_rgba(42,42,36,0.6)] transition hover:-translate-y-0.5 hover:bg-white"
+              >
+                开始生成
+              </Link>
             </div>
           </header>
           {children}
