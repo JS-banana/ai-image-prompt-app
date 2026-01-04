@@ -37,6 +37,11 @@ beforeEach(() => {
 });
 
 describe("GenerateClient (MSW)", () => {
+  it("shows unified gallery strip", () => {
+    render(<GenerateClient prompts={PROMPTS} models={[SEEDREAM_MODEL]} />);
+    expect(screen.getByText(/生成画廊/)).toBeInTheDocument();
+  });
+
   it("requires a non-empty prompt", async () => {
     const user = userEvent.setup();
     render(<GenerateClient prompts={PROMPTS} models={[SEEDREAM_MODEL]} />);
@@ -83,7 +88,13 @@ describe("GenerateClient (MSW)", () => {
     const image = await screen.findByAltText("Seedream 生成结果");
     expect(image).toHaveAttribute("src", "/fixtures/generated.jpg");
 
-    expect(await screen.findByTitle("hello world")).toBeInTheDocument();
+    const gallerySection = screen
+      .getByRole("heading", { name: "生成画廊" })
+      .closest("section");
+    if (!gallerySection) throw new Error("missing gallery section");
+    expect(
+      await within(gallerySection).findByText("hello world"),
+    ).toBeInTheDocument();
     expect(receivedBody).toMatchObject({
       prompt: "hello world",
       modelIds: ["seedream-ark"],
@@ -257,13 +268,13 @@ describe("GenerateClient (MSW)", () => {
 
     await user.type(screen.getByPlaceholderText(/可直接输入/), "hello world");
     await user.click(screen.getByRole("button", { name: "生成" }));
-    await screen.findByTitle("hello world");
+    const gallerySection = screen
+      .getByRole("heading", { name: "生成画廊" })
+      .closest("section");
+    if (!gallerySection) throw new Error("missing gallery section");
+    await within(gallerySection).findByText("hello world");
 
-    const historyHeader = screen.getByRole("heading", { name: "生成历史" })
-      .parentElement;
-    if (!historyHeader) throw new Error("missing history header container");
-
-    await user.click(within(historyHeader).getByRole("button", { name: "导出 JSON" }));
+    await user.click(screen.getByRole("button", { name: "导出 JSON" }));
 
     expect(createObjectURL).toHaveBeenCalledTimes(1);
     const blob = createObjectURL.mock.calls[0]?.[0] as Blob;
@@ -308,24 +319,31 @@ describe("GenerateClient (MSW)", () => {
 
     await user.type(screen.getByPlaceholderText(/可直接输入/), "hello world");
     await user.click(screen.getByRole("button", { name: "生成" }));
-    await screen.findByTitle("hello world");
+    const gallerySection = screen
+      .getByRole("heading", { name: "生成画廊" })
+      .closest("section");
+    if (!gallerySection) throw new Error("missing gallery section");
+    await within(gallerySection).findByText("hello world");
 
     expect(localStorage.getItem("seedream-history")).not.toBeNull();
 
-    const historyHeader = screen.getByRole("heading", { name: "生成历史" })
+    const historyActions = screen.getByRole("button", { name: "导出 JSON" })
       .parentElement;
-    if (!historyHeader) throw new Error("missing history header container");
-
-    await user.click(within(historyHeader).getByRole("button", { name: "清空" }));
+    if (!historyActions) throw new Error("missing history actions");
+    await user.click(within(historyActions).getByRole("button", { name: "清空" }));
 
     expect(await screen.findByText("清空生成历史")).toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: "确认清空" }));
-    expect(await screen.findByText(/暂无历史记录/)).toBeInTheDocument();
+    expect(await screen.findByText(/暂无生成记录/)).toBeInTheDocument();
     expect(localStorage.getItem("seedream-history")).toBeNull();
 
     await waitFor(() => {
-      expect(within(historyHeader).getByRole("button", { name: "导出 JSON" })).toBeDisabled();
-      expect(within(historyHeader).getByRole("button", { name: "清空" })).toBeDisabled();
+      expect(
+        within(historyActions).getByRole("button", { name: "导出 JSON" }),
+      ).toBeDisabled();
+      expect(
+        within(historyActions).getByRole("button", { name: "清空" }),
+      ).toBeDisabled();
     });
   });
 
@@ -368,7 +386,7 @@ describe("GenerateClient (MSW)", () => {
     const user = userEvent.setup();
     render(<GenerateClient prompts={PROMPTS} models={[SEEDREAM_MODEL]} />);
 
-    await screen.findByTitle("from history");
+    await screen.findByText("from history");
     await user.click(screen.getByRole("button", { name: "编辑" }));
 
     expect(screen.getByPlaceholderText(/可直接输入/)).toHaveValue("from history");
@@ -386,7 +404,7 @@ describe("GenerateClient (MSW)", () => {
     });
   });
 
-  it("opens the expanded prompt modal from history", async () => {
+  it("opens the lightbox and shows prompt details from history", async () => {
     const historyItem = {
       id: "h-1",
       prompt: "from history",
@@ -400,20 +418,19 @@ describe("GenerateClient (MSW)", () => {
     const user = userEvent.setup();
     render(<GenerateClient prompts={PROMPTS} models={[SEEDREAM_MODEL]} />);
 
-    await screen.findByTitle("from history");
-    await user.click(screen.getByRole("button", { name: "展开" }));
+    await screen.findByText("from history");
+    await user.click(screen.getByRole("button", { name: "查看" }));
 
-    expect(await screen.findByText("完整提示词")).toBeInTheDocument();
-    const dialog = screen.getByRole("dialog");
+    const dialog = await screen.findByRole("dialog", { name: "图片预览" });
     expect(within(dialog).getByText("from history")).toBeInTheDocument();
 
-    await user.click(screen.getByRole("button", { name: "关闭" }));
+    await user.click(within(dialog).getByRole("button", { name: "关闭" }));
     await waitFor(() => {
-      expect(screen.queryByText("完整提示词")).not.toBeInTheDocument();
+      expect(screen.queryByRole("dialog", { name: "图片预览" })).not.toBeInTheDocument();
     });
   });
 
-  it("opens the image preview modal from history", async () => {
+  it("opens the lightbox preview from history", async () => {
     const historyItem = {
       id: "h-1",
       prompt: "from history",
@@ -427,17 +444,17 @@ describe("GenerateClient (MSW)", () => {
     const user = userEvent.setup();
     render(<GenerateClient prompts={PROMPTS} models={[SEEDREAM_MODEL]} />);
 
-    await screen.findByTitle("from history");
+    await screen.findByText("from history");
     await user.click(screen.getByRole("button", { name: "查看" }));
 
-    expect(await screen.findByAltText("预览")).toHaveAttribute(
-      "src",
-      "https://example.com/seed.png",
-    );
+    const preview = await screen.findByRole("img", { name: "from history" });
+    expect(preview).toHaveStyle({
+      backgroundImage: 'url("https://example.com/seed.png")',
+    });
 
     await user.click(screen.getByRole("button", { name: "关闭" }));
     await waitFor(() => {
-      expect(screen.queryByAltText("预览")).not.toBeInTheDocument();
+      expect(screen.queryByRole("dialog", { name: "图片预览" })).not.toBeInTheDocument();
     });
   });
 

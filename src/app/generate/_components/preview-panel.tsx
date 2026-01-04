@@ -18,6 +18,8 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import type { GenerationGalleryItem } from "@/lib/data/generations";
+import { UnifiedGalleryStrip } from "@/app/_components/unified-gallery-strip";
 
 type PreviewPanelProps = {
   variant?: GenerateSurfaceVariant;
@@ -35,8 +37,8 @@ type PreviewPanelProps = {
 };
 
 export const PreviewPanel = forwardRef<HTMLDivElement, PreviewPanelProps>(
-  function PreviewPanel(
-    {
+  function PreviewPanel(props, ref) {
+    const {
       variant = "classic",
       loading,
       hasGenerated,
@@ -44,19 +46,62 @@ export const PreviewPanel = forwardRef<HTMLDivElement, PreviewPanelProps>(
       size,
       imageHistory,
       historyLoaded,
-      onExpandPrompt,
-      onPreviewImage,
       onEditFromHistory,
       onExportHistory,
       onClearHistory,
-    },
-    ref,
-  ) {
+    } = props;
     const fallbackAspectRatio = getAspectRatioFromSize(size);
     const [resultAspectByUrl, setResultAspectByUrl] = useState<
       Record<string, string>
     >({});
     const [clearHistoryDialogOpen, setClearHistoryDialogOpen] = useState(false);
+    const historyLookup = new Map<string, HistoryItem>();
+    imageHistory.forEach((item) => {
+      historyLookup.set(item.id, item);
+      if (item.requestId) historyLookup.set(item.requestId, item);
+      if (item.resultId) historyLookup.set(item.resultId, item);
+    });
+
+    const galleryItems: GenerationGalleryItem[] = imageHistory.map((item) => ({
+      requestId: item.requestId ?? item.id,
+      resultId: item.resultId ?? "",
+      createdAt: new Date(item.createdAt).toISOString(),
+      status: item.imageUrl ? "SUCCESS" : "PENDING",
+      error: null,
+      imageUrl: item.imageUrl,
+      prompt: item.prompt,
+      size: item.size,
+      model: item.modelLabel,
+      modelIds: [item.modelLabel],
+      hasImageInput: false,
+    }));
+
+    const findHistoryItem = (item: GenerationGalleryItem) =>
+      historyLookup.get(item.resultId) ??
+      historyLookup.get(item.requestId) ??
+      null;
+
+    const handleEditFromHistory = (item: GenerationGalleryItem) => {
+      const source = findHistoryItem(item);
+      if (source) onEditFromHistory(source);
+    };
+
+    const handleDownloadFromHistory = (item: GenerationGalleryItem) => {
+      const source = findHistoryItem(item);
+      if (!source) return;
+
+      const downloadUrl = source.resultId
+        ? `/api/generations/${encodeURIComponent(source.resultId)}/download`
+        : source.imageUrl ?? "";
+
+      if (!downloadUrl) return;
+
+      const anchor = document.createElement("a");
+      anchor.href = downloadUrl;
+      anchor.download = `seedream-${source.resultId ?? source.id}.png`;
+      anchor.rel = "noreferrer";
+      anchor.click();
+    };
 
     const panelClass =
       variant === "glint"
@@ -156,168 +201,74 @@ export const PreviewPanel = forwardRef<HTMLDivElement, PreviewPanelProps>(
           </div>
         ) : null}
 
-          <div className={panelClass}>
-	            <div className="flex items-center justify-between">
-	              <h2 className="text-sm font-semibold text-slate-900">生成历史</h2>
-	              <div className="flex items-center gap-2">
-                <Link
-                  href="/gallery"
-                  className="rounded-full border border-slate-200 bg-white px-3 py-1 text-[11px] font-semibold text-slate-700 hover:bg-slate-100"
-                >
-                  打开库
-                </Link>
+        <div className="flex flex-wrap items-center justify-end gap-2">
+          <Link
+            href="/gallery"
+            className="rounded-full border border-slate-200 bg-white px-3 py-1 text-[11px] font-semibold text-slate-700 hover:bg-slate-100"
+          >
+            打开库
+          </Link>
+          <button
+            type="button"
+            onClick={onExportHistory}
+            disabled={imageHistory.length === 0}
+            className="rounded-full border border-slate-200 bg-white px-3 py-1 text-[11px] font-semibold text-slate-700 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-60"
+            title="导出仅保存元数据与 URL，URL 可能过期"
+          >
+            导出 JSON
+          </button>
+
+          <Dialog
+            open={clearHistoryDialogOpen}
+            onOpenChange={setClearHistoryDialogOpen}
+          >
+            <DialogTrigger asChild>
+              <button
+                type="button"
+                disabled={imageHistory.length === 0}
+                className="rounded-full border border-slate-200 bg-white px-3 py-1 text-[11px] font-semibold text-slate-700 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                清空
+              </button>
+            </DialogTrigger>
+            <DialogContent className="w-[min(92vw,28rem)]">
+              <div className="space-y-2">
+                <DialogTitle>清空生成历史</DialogTitle>
+                <DialogDescription>
+                  这会删除本地浏览器中保存的生成历史（最多 12 条），不可恢复。
+                </DialogDescription>
+              </div>
+
+              <div className="mt-6 flex justify-end gap-2">
+                <DialogClose asChild>
+                  <button
+                    type="button"
+                    className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:border-slate-300"
+                  >
+                    取消
+                  </button>
+                </DialogClose>
                 <button
                   type="button"
-                  onClick={onExportHistory}
-                  disabled={imageHistory.length === 0}
-                  className="rounded-full border border-slate-200 bg-white px-3 py-1 text-[11px] font-semibold text-slate-700 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-60"
-                  title="导出仅保存元数据与 URL，URL 可能过期"
+                  className="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700"
+                  onClick={() => {
+                    onClearHistory();
+                    setClearHistoryDialogOpen(false);
+                  }}
                 >
-                  导出 JSON
+                  确认清空
                 </button>
-
-                <Dialog
-                  open={clearHistoryDialogOpen}
-                  onOpenChange={setClearHistoryDialogOpen}
-                >
-                  <DialogTrigger asChild>
-                    <button
-                      type="button"
-                      disabled={imageHistory.length === 0}
-                      className="rounded-full border border-slate-200 bg-white px-3 py-1 text-[11px] font-semibold text-slate-700 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-60"
-                    >
-                      清空
-                    </button>
-                  </DialogTrigger>
-                  <DialogContent className="w-[min(92vw,28rem)]">
-                    <div className="space-y-2">
-                      <DialogTitle>清空生成历史</DialogTitle>
-                      <DialogDescription>
-                        这会删除本地浏览器中保存的生成历史（最多 12 条），不可恢复。
-                      </DialogDescription>
-                    </div>
-
-                    <div className="mt-6 flex justify-end gap-2">
-                      <DialogClose asChild>
-                        <button
-                          type="button"
-                          className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:border-slate-300"
-                        >
-                          取消
-                        </button>
-                      </DialogClose>
-                      <button
-                        type="button"
-                        className="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700"
-                        onClick={() => {
-                          onClearHistory();
-                          setClearHistoryDialogOpen(false);
-                        }}
-                      >
-                        确认清空
-                      </button>
-                    </div>
-                  </DialogContent>
-                </Dialog>
               </div>
-            </div>
-          {!historyLoaded ? (
-            <div className="rounded-lg border border-dashed border-slate-200 bg-slate-50 p-4 text-xs text-slate-600">
-              加载中...
-            </div>
-          ) : imageHistory.length === 0 ? (
-            <div className="rounded-lg border border-dashed border-slate-200 bg-slate-50 p-4 text-xs text-slate-600">
-              暂无历史记录，生成后自动保存。
-            </div>
-          ) : (
-            <div className="space-y-2">
-              {imageHistory.map((item) => (
-                <div
-                  key={item.id}
-                  className="flex flex-col gap-3 rounded-lg border border-slate-200 bg-slate-50 p-3 sm:flex-row sm:items-center"
-                >
-                  <div className="relative h-20 w-16 overflow-hidden rounded-md bg-white">
-                    {item.imageUrl ? (
-                      <Image
-                        src={item.imageUrl}
-                        alt="历史记录"
-                        fill
-                        className="object-cover"
-                        sizes="120px"
-                      />
-                    ) : (
-                      <div className="flex h-full w-full items-center justify-center text-xs text-slate-500">
-                        无图
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="min-w-0 flex-1 space-y-1 text-xs text-slate-600">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <span className="font-semibold text-slate-800">
-                        {item.modelLabel}
-                      </span>
-                      <span>{item.size}</span>
-                      <span>{new Date(item.createdAt).toLocaleTimeString()}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-[11px] text-slate-500">prompt:</span>
-                      <span
-                        className="max-w-[280px] truncate text-[11px] text-slate-700 sm:max-w-[360px]"
-                        title={item.prompt}
-                      >
-                        {item.prompt}
-                      </span>
-                      <button
-                        type="button"
-                        className="text-[11px] text-blue-600 underline"
-                        onClick={() => onExpandPrompt(item.prompt)}
-                      >
-                        展开
-                      </button>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-2 sm:ml-auto">
-                    {item.imageUrl ? (
-                      <>
-                        <a
-                          href={
-                            item.resultId
-                              ? `/api/generations/${encodeURIComponent(item.resultId)}/download`
-                              : item.imageUrl
-                          }
-                          download={`seedream-${item.resultId ?? item.id}.png`}
-                          className="rounded-full border border-slate-200 px-3 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-100"
-                        >
-                          下载
-                        </a>
-                        <button
-                          type="button"
-                          onClick={() => onPreviewImage(item.imageUrl!)}
-                          className="rounded-full border border-slate-200 px-3 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-100"
-                        >
-                          查看
-                        </button>
-                      </>
-                    ) : null}
-                    <button
-                      type="button"
-                      onClick={() => onEditFromHistory(item)}
-                      className="rounded-full border border-slate-200 px-3 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-100"
-                    >
-                      编辑
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-
-          <p className="text-[11px] text-slate-500">
-            最多保存 12 条（本地）。历史图片 URL 可能失效，建议及时下载。
-          </p>
+            </DialogContent>
+          </Dialog>
         </div>
+
+        <UnifiedGalleryStrip
+          title="生成画廊"
+          items={historyLoaded ? galleryItems : []}
+          onEdit={handleEditFromHistory}
+          onDownload={handleDownloadFromHistory}
+        />
       </div>
     );
   },

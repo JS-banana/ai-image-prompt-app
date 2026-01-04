@@ -95,7 +95,7 @@ test("homepage shows unified gallery strip", async () => {
   mockSnapshot();
   mockWorkbenchData();
   await renderHome();
-  expect(screen.getByText(/生成画廊/i)).toBeInTheDocument();
+  expect(screen.getAllByText(/生成画廊/i).length).toBeGreaterThan(0);
   expect(screen.getByRole("button", { name: "查看" })).toBeInTheDocument();
 });
 
