@@ -83,23 +83,26 @@ const renderHome = async () => {
   render(page);
 };
 
-test("homepage shows brand and CTA", async () => {
+test("homepage shows CTA", async () => {
   mockSnapshot();
   mockWorkbenchData();
   await renderHome();
-  expect(screen.getByText(/GLINT LAB/i)).toBeInTheDocument();
   expect(screen.getByRole("link", { name: /开始生成/i })).toBeInTheDocument();
-  expect(screen.getByText(/温室工作台/i)).toBeInTheDocument();
+  expect(screen.getByRole("link", { name: /浏览画廊/i })).toBeInTheDocument();
 });
 
-test("homepage shows recent and prompt highlights", async () => {
+test("homepage shows unified gallery strip", async () => {
   mockSnapshot();
   mockWorkbenchData();
   await renderHome();
-  expect(screen.getByText(/最近生成/i)).toBeInTheDocument();
-  expect(screen.getByText(/提示词精选/i)).toBeInTheDocument();
-  expect(screen.getByRole("link", { name: /进入画廊/i })).toBeInTheDocument();
-  expect(
-    screen.getByRole("link", { name: /进入提示词库/i }),
-  ).toBeInTheDocument();
+  expect(screen.getAllByText(/生成画廊/i).length).toBeGreaterThan(0);
+  expect(screen.getByRole("button", { name: "查看" })).toBeInTheDocument();
+});
+
+test("homepage no longer shows brand tag row", async () => {
+  mockSnapshot();
+  mockWorkbenchData();
+  await renderHome();
+  expect(screen.queryByText(/GLINT LAB/i)).not.toBeInTheDocument();
+  expect(screen.queryByText(/温室工作台/i)).not.toBeInTheDocument();
 });

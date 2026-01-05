@@ -3,13 +3,12 @@ import { getHomeSnapshot } from "@/lib/data/home-snapshot";
 import { getModelConfigs } from "@/lib/data/models";
 import { getPromptOptions } from "@/lib/data/prompts";
 import HomeGenerateWorkbench from "./_components/home-generate-workbench";
-import { HomeRecentStrip } from "./_components/home-recent-strip";
-import { HomePromptHighlights } from "./_components/home-prompt-highlights";
+import { UnifiedGalleryStrip } from "./_components/unified-gallery-strip";
 
 export default async function Home() {
   const prompts = await getPromptOptions();
   const models = await getModelConfigs();
-  const { recentGenerations, promptHighlights } = await getHomeSnapshot();
+  const { recentGenerations } = await getHomeSnapshot();
 
   const seedreamModel = {
     id: "seedream-ark",
@@ -45,14 +44,6 @@ export default async function Home() {
           className="grid gap-6 opacity-0 motion-reduce:opacity-100 motion-reduce:animate-none animate-[glint-fade-up_0.9s_ease_forwards]"
           style={{ animationDelay: "0.05s" }}
         >
-          <div className="flex flex-wrap items-center gap-4 text-[11px] uppercase tracking-[0.4em] text-[var(--glint-muted)]">
-            <span className="font-display text-[var(--glint-ink)]">
-              GLINT LAB
-            </span>
-            <span className="rounded-full border border-[rgba(200,155,115,0.35)] bg-white/70 px-3 py-1 text-[10px] tracking-[0.32em]">
-              温室工作台
-            </span>
-          </div>
           <h1 className="font-display text-4xl leading-tight md:text-5xl">
             让创作更轻、更快、更美
           </h1>
@@ -80,17 +71,6 @@ export default async function Home() {
           className="grid gap-6 opacity-0 motion-reduce:opacity-100 motion-reduce:animate-none animate-[glint-fade-up_0.9s_ease_forwards]"
           style={{ animationDelay: "0.16s" }}
         >
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div>
-              <p className="text-[11px] uppercase tracking-[0.36em] text-[var(--glint-muted)]">
-                Prompt Canvas
-              </p>
-              <h2 className="font-display text-2xl">高密度提示词工作台</h2>
-            </div>
-            <p className="text-xs text-[var(--glint-muted)]">
-              细腻材质与色彩控制，让输入像在画布上作画。
-            </p>
-          </div>
           <HomeGenerateWorkbench prompts={prompts} models={mergedModels} />
         </section>
 
@@ -98,8 +78,10 @@ export default async function Home() {
           className="grid gap-10 opacity-0 motion-reduce:opacity-100 motion-reduce:animate-none animate-[glint-fade-up_0.9s_ease_forwards]"
           style={{ animationDelay: "0.28s" }}
         >
-          <HomeRecentStrip items={recentGenerations} />
-          <HomePromptHighlights items={promptHighlights} />
+          <UnifiedGalleryStrip
+            title="生成画廊"
+            items={recentGenerations}
+          />
         </section>
       </main>
     </div>
