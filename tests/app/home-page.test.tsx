@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import { beforeEach, expect, test, vi } from "vitest";
 import { getHomeSnapshot } from "@/lib/data/home-snapshot";
 import { getModelConfigs } from "@/lib/data/models";
@@ -78,31 +78,95 @@ beforeEach(() => {
 });
 
 const renderHome = async () => {
+  const layoutModule = await import("@/app/layout");
   const pageModule = await import("@/app/page");
   const page = await pageModule.default();
-  render(page);
+  const RootLayout = layoutModule.default;
+  render(<RootLayout>{page}</RootLayout>);
 };
 
 test("homepage shows CTA", async () => {
   mockSnapshot();
   mockWorkbenchData();
   await renderHome();
-  expect(screen.getByRole("link", { name: /开始生成/i })).toBeInTheDocument();
-  expect(screen.getByRole("link", { name: /浏览画廊/i })).toBeInTheDocument();
+  const main = screen.getByRole("main");
+  expect(within(main).queryByRole("link", { name: /开始生成/i })).not.toBeInTheDocument();
+  expect(within(main).queryByRole("link", { name: /浏览画廊/i })).not.toBeInTheDocument();
 });
 
-test("homepage shows unified gallery strip", async () => {
+test("homepage headline removes seedream clause", async () => {
   mockSnapshot();
   mockWorkbenchData();
   await renderHome();
-  expect(screen.getAllByText(/生成画廊/i).length).toBeGreaterThan(0);
-  expect(screen.getByRole("button", { name: "查看" })).toBeInTheDocument();
+  expect(screen.queryByText(/专注 Seedream 4.5/)).not.toBeInTheDocument();
+  const tagline = screen.getByText(/用色彩丰富的提示词画布/);
+  expect(tagline).toBeInTheDocument();
+  expect(tagline).toHaveClass("md:whitespace-nowrap");
+  expect(tagline).not.toHaveClass("text-ellipsis");
+});
+
+test("homepage hides snapshot gallery strip", async () => {
+  mockSnapshot();
+  mockWorkbenchData();
+  await renderHome();
+  expect(screen.queryByText("warm glasshouse")).not.toBeInTheDocument();
+});
+
+test("homepage shows prompt highlights", async () => {
+  mockSnapshot();
+  mockWorkbenchData();
+  await renderHome();
+  expect(screen.getByText("提示词精选")).toBeInTheDocument();
+  expect(screen.getByText("苔绿光影")).toBeInTheDocument();
+});
+
+test("homepage gallery header uses entry link and hides export/clear", async () => {
+  mockSnapshot();
+  mockWorkbenchData();
+  await renderHome();
+  const heading = screen.getByRole("heading", { name: "生成历史" });
+  const headerRow = heading.closest("div");
+  if (!headerRow) throw new Error("missing gallery header");
+  expect(within(headerRow).getByRole("link", { name: "进入画廊 →" })).toBeInTheDocument();
+  expect(
+    within(headerRow).queryByRole("button", { name: "导出 JSON" }),
+  ).not.toBeInTheDocument();
+  expect(
+    within(headerRow).queryByRole("button", { name: "清空" }),
+  ).not.toBeInTheDocument();
 });
 
 test("homepage no longer shows brand tag row", async () => {
   mockSnapshot();
   mockWorkbenchData();
   await renderHome();
-  expect(screen.queryByText(/GLINT LAB/i)).not.toBeInTheDocument();
-  expect(screen.queryByText(/温室工作台/i)).not.toBeInTheDocument();
+  const main = screen.getByRole("main");
+  expect(within(main).queryByText(/GLINT LAB/i)).not.toBeInTheDocument();
+  expect(within(main).queryByText(/温室工作台/i)).not.toBeInTheDocument();
+});
+
+test("header exposes prompt link and github icon", async () => {
+  mockSnapshot();
+  mockWorkbenchData();
+  await renderHome();
+  const header = screen.getByRole("banner");
+  const promptLink = within(header).getByRole("link", { name: "提示词库" });
+  const generateLink = within(header).getByRole("link", { name: "开始生成" });
+  const historyLink = within(header).getByRole("link", { name: "生成历史" });
+  const githubLink = within(header).getByRole("link", { name: "GitHub" });
+  const logoLink = within(header).getByRole("link", { name: /GLINT LAB/i });
+
+  expect(promptLink).toHaveAttribute("href", "/prompts");
+  expect(historyLink).toHaveAttribute("href", "/gallery");
+  expect(githubLink).toHaveAttribute(
+    "href",
+    "https://github.com/JS-banana/ai-image-prompt-app",
+  );
+  expect(logoLink).toHaveAttribute("href", "/");
+  expect(generateLink.className).toBe(promptLink.className);
+  expect(generateLink).toHaveClass("text-[var(--glint-muted)]");
+
+  const headerLinks = within(header).getAllByRole("link");
+  expect(headerLinks[1]).toHaveAccessibleName("开始生成");
+  expect(headerLinks[headerLinks.length - 1]).toHaveAccessibleName("GitHub");
 });

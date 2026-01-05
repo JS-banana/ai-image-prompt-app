@@ -3,12 +3,12 @@ import { getHomeSnapshot } from "@/lib/data/home-snapshot";
 import { getModelConfigs } from "@/lib/data/models";
 import { getPromptOptions } from "@/lib/data/prompts";
 import HomeGenerateWorkbench from "./_components/home-generate-workbench";
-import { UnifiedGalleryStrip } from "./_components/unified-gallery-strip";
+import { HomePromptHighlights } from "./_components/home-prompt-highlights";
 
 export default async function Home() {
   const prompts = await getPromptOptions();
   const models = await getModelConfigs();
-  const { recentGenerations } = await getHomeSnapshot();
+  const { promptHighlights } = await getHomeSnapshot();
 
   const seedreamModel = {
     id: "seedream-ark",
@@ -47,24 +47,9 @@ export default async function Home() {
           <h1 className="font-display text-4xl leading-tight md:text-5xl">
             让创作更轻、更快、更美
           </h1>
-          <p className="max-w-2xl text-base leading-relaxed text-[var(--glint-muted)] md:text-lg">
-            用色彩丰富的提示词画布，把灵感捕捉成细腻图像。专注 Seedream
-            4.5，让每一次生成都像精修后的作品。
+          <p className="max-w-2xl text-base leading-relaxed text-[var(--glint-muted)] md:text-lg md:whitespace-nowrap">
+            用色彩丰富的提示词画布，把灵感捕捉成细腻图像，让每一次生成都像精修后的作品。
           </p>
-          <div className="flex flex-wrap items-center gap-4">
-            <Link
-              href="/generate"
-              className="rounded-full bg-gradient-to-r from-[rgba(216,181,108,0.95)] to-[rgba(230,200,135,0.95)] px-6 py-3 text-xs font-semibold uppercase tracking-[0.24em] text-[var(--glint-ink)] shadow-[0_18px_40px_-28px_rgba(42,42,36,0.7)] transition hover:-translate-y-0.5"
-            >
-              开始生成
-            </Link>
-            <Link
-              href="/gallery"
-              className="rounded-full border border-white/70 bg-white/60 px-6 py-3 text-xs font-semibold uppercase tracking-[0.24em] text-[var(--glint-ink)] transition hover:-translate-y-0.5 hover:bg-white"
-            >
-              浏览画廊
-            </Link>
-          </div>
         </section>
 
         <section
@@ -78,10 +63,7 @@ export default async function Home() {
           className="grid gap-10 opacity-0 motion-reduce:opacity-100 motion-reduce:animate-none animate-[glint-fade-up_0.9s_ease_forwards]"
           style={{ animationDelay: "0.28s" }}
         >
-          <UnifiedGalleryStrip
-            title="生成画廊"
-            items={recentGenerations}
-          />
+          <HomePromptHighlights items={promptHighlights} />
         </section>
       </main>
     </div>

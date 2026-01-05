@@ -15,6 +15,7 @@ export default function HomeGenerateWorkbench({
       prefill={prefill}
       variant="glint"
       showHeader={false}
+      showPromptHeader={false}
     />
   );
 }
