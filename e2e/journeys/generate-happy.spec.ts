@@ -24,9 +24,12 @@ test("生成成功（mock /api/apikey + /api/generate）", async ({ page }) => {
     .fill(prompt);
   await page.getByRole("button", { name: "生成" }).click();
 
-  await expect(page.getByRole("heading", { name: "生成结果" })).toBeVisible();
-  await expect(page.getByAltText("Seedream 生成结果")).toBeVisible();
-  await expect(page.getByTitle(prompt)).toBeVisible();
-  expect(generateCalls).toBe(1);
-});
+  await expect(page.getByRole("heading", { name: "生成历史" })).toBeVisible();
 
+  const card = page.locator("article", { hasText: prompt });
+  await expect(card).toBeVisible();
+  await card.getByRole("button", { name: "查看" }).click();
+  await expect(page.getByRole("img", { name: prompt })).toBeVisible();
+
+  await expect.poll(() => generateCalls).toBe(1);
+});

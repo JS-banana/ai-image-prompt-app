@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { getHomeSnapshot } from "@/lib/data/home-snapshot";
 import { getModelConfigs } from "@/lib/data/models";
 import { getPromptOptions } from "@/lib/data/prompts";

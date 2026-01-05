@@ -1,7 +1,29 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { Fraunces, Noto_Sans_SC, Noto_Serif_SC } from "next/font/google";
 import { GitHubIcon } from "./_components/github-icon";
 import "./globals.css";
+
+const notoSans = Noto_Sans_SC({
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700"],
+  display: "swap",
+  variable: "--font-body",
+});
+
+const notoSerif = Noto_Serif_SC({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  display: "swap",
+  variable: "--font-display",
+});
+
+const fraunces = Fraunces({
+  subsets: ["latin"],
+  weight: ["400", "600"],
+  display: "swap",
+  variable: "--font-accent",
+});
 
 export const metadata: Metadata = {
   title: "GLINT LAB · 温室工作台",
@@ -16,7 +38,7 @@ export default function RootLayout({
   return (
     <html lang="zh-CN" suppressHydrationWarning>
       <body
-        className="antialiased bg-[var(--glint-ivory)] text-[var(--glint-ink)]"
+        className={`${notoSans.variable} ${notoSerif.variable} ${fraunces.variable} antialiased bg-[var(--glint-ivory)] text-[var(--glint-ink)]`}
       >
         <div className="min-h-screen">
           <header className="sticky top-0 z-30 border-b border-white/70 bg-[rgba(246,241,231,0.85)] backdrop-blur">

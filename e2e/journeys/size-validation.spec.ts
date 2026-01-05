@@ -19,7 +19,10 @@ test("自定义分辨率像素不足（前端校验，不触发 /api/generate）
 
   await page.goto("/generate");
 
-  await page.getByRole("button", { name: /2K\s*·\s*1:1/ }).click();
+  await page.getByRole("button", { name: /分辨率/ }).click();
+  await page.getByRole("button", { name: /^2K$/ }).click();
+  const ratioSection = page.getByText("图片比例").locator("..");
+  await ratioSection.getByRole("button", { name: /1:1/ }).click();
   await expect(page.getByRole("button", { name: "使用当前尺寸" })).toBeVisible();
 
   await page.getByPlaceholder("宽度").fill("100");

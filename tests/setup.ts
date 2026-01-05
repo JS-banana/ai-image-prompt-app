@@ -3,6 +3,15 @@ import { cleanup } from "@testing-library/react";
 import { afterAll, afterEach, beforeAll, vi } from "vitest";
 import { server } from "./helpers/msw";
 
+vi.mock("next/font/google", () => {
+  const mockFont = () => ({ className: "", variable: "" });
+  return {
+    Noto_Sans_SC: mockFont,
+    Noto_Serif_SC: mockFont,
+    Fraunces: mockFont,
+  };
+});
+
 beforeAll(() => {
   server.listen({ onUnhandledRequest: "error" });
 
