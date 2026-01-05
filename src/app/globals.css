@@ -1,3 +1,14 @@
+@import "@fontsource/noto-sans-sc/300.css";
+@import "@fontsource/noto-sans-sc/400.css";
+@import "@fontsource/noto-sans-sc/500.css";
+@import "@fontsource/noto-sans-sc/600.css";
+@import "@fontsource/noto-sans-sc/700.css";
+@import "@fontsource/noto-serif-sc/400.css";
+@import "@fontsource/noto-serif-sc/500.css";
+@import "@fontsource/noto-serif-sc/600.css";
+@import "@fontsource/noto-serif-sc/700.css";
+@import "@fontsource/fraunces/400.css";
+@import "@fontsource/fraunces/600.css";
 @import "tailwindcss";
 
 :root {
@@ -10,6 +21,10 @@
   --glint-azure: #5f7e90;
   --glint-rose: #c88f7a;
   --glint-cream: #fffaf0;
+  --font-body:
+    "Noto Sans SC", "Noto Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-display: "Noto Serif SC", "Noto Serif", "Songti SC", serif;
+  --font-accent: "Fraunces", "Noto Serif SC", serif;
 }
 
 @theme inline {

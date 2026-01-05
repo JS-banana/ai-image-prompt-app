@@ -8,6 +8,15 @@ importers:
 
   .:
     dependencies:
+      '@fontsource/fraunces':
+        specifier: ^5.2.9
+        version: 5.2.9
+      '@fontsource/noto-sans-sc':
+        specifier: ^5.2.8
+        version: 5.2.8
+      '@fontsource/noto-serif-sc':
+        specifier: ^5.2.8
+        version: 5.2.8
       '@prisma/client':
         specifier: 5.19.1
         version: 5.19.1(prisma@5.19.1)
@@ -576,6 +585,15 @@ packages:
 
   '@floating-ui/utils@0.2.10':
     resolution: {integrity: sha512-aGTxbpbg8/b5JfU1HXSrbH3wXZuLPJcNEcZQFMxLs3oSzgtVu6nFPkbbGGUvBcUjKV2YyB9Wxxabo+HEH9tcRQ==}
+
+  '@fontsource/fraunces@5.2.9':
+    resolution: {integrity: sha512-XDzuddBtoC7BZgZdBn6b7hsFZY2+V1hgN7yca5fBTKuHjb/lOd45a0Ji8dTUgFhPoL7RdGupo+bC2BFSt6UH8Q==}
+
+  '@fontsource/noto-sans-sc@5.2.8':
+    resolution: {integrity: sha512-8T8HxIS3uAMCfaQawKRH/6yYZ1oRnJZB/CrGwfxGgJa+zAOBgx2lqZMiTY/WbQpLGlPRqX4zHXJYI09CI2q6tA==}
+
+  '@fontsource/noto-serif-sc@5.2.8':
+    resolution: {integrity: sha512-C7fAr+d1GjOAw1qIbntsnqbA3l5dkdzcmNNgeCXLC8QZ7VNubL7MTrX8UcYKHceX4mI//z8gGtXbOeeQrB6P7g==}
 
   '@humanfs/core@0.19.1':
     resolution: {integrity: sha512-5DyQ4+1JEUzejeK1JGICcideyfUbGixgS9jNgex5nqkW+cY7WZhxBigmieN5Qnw9ZosSNVC9KQKyb+GUaGyKUA==}
@@ -3972,6 +3990,12 @@ snapshots:
       react-dom: 19.2.0(react@19.2.0)
 
   '@floating-ui/utils@0.2.10': {}
+
+  '@fontsource/fraunces@5.2.9': {}
+
+  '@fontsource/noto-sans-sc@5.2.8': {}
+
+  '@fontsource/noto-serif-sc@5.2.8': {}
 
   '@humanfs/core@0.19.1': {}
 

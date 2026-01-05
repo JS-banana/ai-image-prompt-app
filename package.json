@@ -28,6 +28,9 @@
     "seed": "tsx prisma/seed.ts"
   },
   "dependencies": {
+    "@fontsource/fraunces": "^5.2.9",
+    "@fontsource/noto-sans-sc": "^5.2.8",
+    "@fontsource/noto-serif-sc": "^5.2.8",
     "@prisma/client": "5.19.1",
     "@radix-ui/react-dialog": "^1.1.15",
     "@radix-ui/react-popover": "^1.1.15",
