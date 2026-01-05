@@ -9,7 +9,7 @@
 ## 技术架构与存储策略
 
 - 栈：Next.js 16（App Router + Server Actions 默认），Prisma ORM（当前锁定 5.19，SQLite）。
-- 开发/本地：SQLite 文件 `prisma/prisma/dev.db`（Prisma `provider = "sqlite"`，JSON/枚举用字符串存储，业务侧自行 JSON.parse）。
+- 开发/本地：SQLite 文件 `prisma/dev.db`（Prisma `provider = "sqlite"`，JSON/枚举用字符串存储，业务侧自行 JSON.parse）。
 - 生产建议：改用托管 SQLite 兼容（libsql/Turso）或 Vercel Postgres/KV，更新 `DATABASE_URL` 即可迁移；Vercel 无持久盘，不要依赖本地 SQLite。
 - 数据保留：在无远端库时，可提供 JSON 导出/导入作为备份；有远端库则以数据库为准。
 - 模型接入：按提供商封装 Model Connector（参数映射/校验/错误隔离/超时）。

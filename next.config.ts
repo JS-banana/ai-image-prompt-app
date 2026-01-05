@@ -8,6 +8,9 @@ const nextConfig: NextConfig = {
     ],
     unoptimized: true,
   },
+  outputFileTracingIncludes: {
+    "/**/*": ["./prisma/**/*"],
+  },
 };
 
 export default nextConfig;
