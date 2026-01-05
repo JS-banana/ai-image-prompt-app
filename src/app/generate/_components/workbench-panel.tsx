@@ -28,7 +28,6 @@ import {
   PaintIcon,
   PortraitIcon,
   PromptLibraryIcon,
-  ResolutionIcon,
   SquareIcon,
   SwirlIcon,
 } from "./icons";
@@ -126,6 +125,22 @@ function OrientationIcon({
   return <SquareIcon className={className} />;
 }
 
+function BrandImageIcon({
+  src,
+  className,
+}: {
+  src: string;
+  className?: string;
+}) {
+  const baseClass = className ? `${className} object-contain` : "h-4 w-4 object-contain";
+  return (
+    <>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src={src} alt="" aria-hidden="true" className={baseClass} />
+    </>
+  );
+}
+
 function ModelBrandIcon({
   model,
   className,
@@ -134,6 +149,16 @@ function ModelBrandIcon({
   className?: string;
 }) {
   const haystack = `${model.provider} ${model.modelName}`.toLowerCase();
+  if (
+    haystack.includes("gemini") ||
+    haystack.includes("nano banana") ||
+    haystack.includes("nanobanana")
+  ) {
+    return <BrandImageIcon src="/brands/gemini.svg" className={className} />;
+  }
+  if (haystack.includes("qwen") || haystack.includes("通义") || haystack.includes("tongyi")) {
+    return <BrandImageIcon src="/brands/qwen.svg" className={className} />;
+  }
   if (haystack.includes("seedream") || haystack.includes("doubao")) {
     return <ByteDanceIcon className={className} />;
   }
@@ -385,6 +410,7 @@ function SizePicker({
 
 type WorkbenchPanelProps = {
   variant?: GenerateSurfaceVariant;
+  showPromptHeader?: boolean;
   prompt: {
     value: string;
     onChange: (value: string) => void;
@@ -436,6 +462,7 @@ type WorkbenchPanelProps = {
 
 export function WorkbenchPanel({
   variant = "classic",
+  showPromptHeader = true,
   prompt,
   upload,
   model,
@@ -457,7 +484,8 @@ export function WorkbenchPanel({
     : "模型";
 
   const sizeMeta = useMemo(() => getSizeMeta(size.value), [size.value]);
-  const sizeTriggerLabel = `${sizeMeta.labelTier} · ${sizeMeta.ratio}`;
+  const sizeTriggerLabel = `${sizeMeta.labelTier} | ${sizeMeta.ratio}`;
+  const sizeTriggerAriaLabel = `分辨率 ${sizeMeta.labelTier} | ${sizeMeta.ratio}`;
 
   const filteredPrompts = useMemo(() => {
     if (!prompt.search.trim()) return prompt.options;
@@ -483,24 +511,27 @@ export function WorkbenchPanel({
     ? "rounded-full border border-white/70 bg-white/60 px-3 py-1 font-semibold text-[var(--glint-muted)] hover:bg-white"
     : "rounded-full border border-slate-200 px-3 py-1 font-semibold hover:bg-white";
   const textareaClass = isGlint
-    ? "h-56 w-full resize-none rounded-xl border border-[#E7E0D2] bg-white/80 px-3 py-2 text-sm text-[var(--glint-ink)] outline-none ring-1 ring-transparent transition focus:border-[#C89B73] focus:ring-[#E6C887]"
-    : "h-56 w-full resize-none rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none ring-1 ring-transparent transition focus:border-slate-300 focus:ring-slate-200";
+    ? "h-44 w-full resize-none rounded-xl border border-[#E7E0D2] bg-white/80 px-3 py-2 text-sm text-[var(--glint-ink)] outline-none ring-1 ring-transparent transition focus:border-[#C89B73] focus:ring-[#E6C887]"
+    : "h-44 w-full resize-none rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none ring-1 ring-transparent transition focus:border-slate-300 focus:ring-slate-200";
   const metaClass = isGlint
     ? "text-[11px] text-[var(--glint-muted)]"
     : "text-[11px] text-slate-500";
   const generateButtonClass = isGlint
-    ? "rounded-full bg-gradient-to-r from-[rgba(216,181,108,0.95)] to-[rgba(230,200,135,0.95)] px-5 py-2 text-xs font-semibold uppercase tracking-[0.24em] text-[var(--glint-ink)] shadow-[0_18px_40px_-28px_rgba(42,42,36,0.7)] transition disabled:cursor-not-allowed disabled:opacity-70"
-    : "rounded-full bg-slate-900 px-5 py-2 text-sm font-semibold text-white shadow transition disabled:cursor-not-allowed disabled:opacity-70";
+    ? "rounded-full bg-gradient-to-r from-[rgba(216,181,108,0.95)] to-[rgba(230,200,135,0.95)] px-6 py-2.5 text-sm font-semibold uppercase tracking-[0.22em] text-[var(--glint-ink)] shadow-[0_22px_50px_-28px_rgba(42,42,36,0.75)] transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-70"
+    : "rounded-full bg-slate-900 px-6 py-2.5 text-sm font-semibold text-white shadow transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-70";
+  const promptHeaderRowClass = showPromptHeader
+    ? "flex items-center justify-between pb-3"
+    : "flex items-center justify-end pb-3";
 
   return (
     <div className="space-y-4">
       <div className="space-y-2">
-        <label className={labelClass}>提示词工作台</label>
+        {showPromptHeader ? (
+          <label className={labelClass}>提示词工作台</label>
+        ) : null}
         <div className={promptCardClass}>
-          <div className="flex items-center justify-between pb-3">
-            <span className={promptTagClass}>
-              Prompt
-            </span>
+          <div className={promptHeaderRowClass}>
+            {showPromptHeader ? <span className={promptTagClass}>Prompt</span> : null}
             <div className="flex items-center gap-2 text-xs text-slate-600">
               <button
                 type="button"
@@ -558,13 +589,13 @@ export function WorkbenchPanel({
             </div>
           ) : null}
 
-          <div className="mt-2 flex items-center justify-between">
+          <div className="mt-2 flex flex-wrap items-center justify-between gap-3">
             <div className={metaClass}>
               {prompt.value.length} 字 · {selectedModelLabel} · 分辨率{" "}
               {sizeMeta.labelTier}（{sizeMeta.ratio} · {sizeMeta.labelDims}） · Key{" "}
               {apiKey.sourceLabel}
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <Popover
                 open={menu.active === "prompt"}
                 onOpenChange={(open) => {
@@ -640,7 +671,9 @@ export function WorkbenchPanel({
                 <PopoverTrigger asChild>
                   <button
                     type="button"
-                    className="flex min-w-0 items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-700 shadow-sm hover:border-slate-300"
+                    aria-label={`模型：${selectedModelLabel}`}
+                    title={`模型：${selectedModelLabel}`}
+                    className="flex items-center justify-center rounded-full border border-slate-200 bg-white p-2 text-xs font-medium text-slate-700 shadow-sm hover:border-slate-300"
                   >
                     {selectedModel ? (
                       <ModelBrandIcon
@@ -650,9 +683,6 @@ export function WorkbenchPanel({
                     ) : (
                       <ModelIcon className="h-4 w-4 text-slate-700" />
                     )}
-                    <span className="max-w-[9.5rem] truncate">
-                      {selectedModelLabel}
-                    </span>
                   </button>
                 </PopoverTrigger>
                 <PopoverContent side="top" align="end" className="w-64">
@@ -717,15 +747,25 @@ export function WorkbenchPanel({
                 <PopoverTrigger asChild>
                   <button
                     type="button"
-                    className="flex min-w-0 items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-700 shadow-sm hover:border-slate-300"
+                    aria-label={sizeTriggerAriaLabel}
+                    title={sizeTriggerLabel}
+                    className="flex min-w-0 items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-700 shadow-sm hover:border-slate-300"
                   >
-                    <ResolutionIcon className="h-4 w-4 text-slate-700" />
-                    <OrientationIcon
-                      orientation={sizeMeta.orientation}
-                      className="h-4 w-4 text-slate-600"
+                    <span className="text-[12px] font-semibold text-slate-800">
+                      {sizeMeta.labelTier}
+                    </span>
+                    <span
+                      aria-hidden="true"
+                      className="h-3 w-px rounded-full bg-slate-200"
                     />
-                    <span className="max-w-[10rem] truncate">
-                      {sizeTriggerLabel}
+                    <span className="flex items-center gap-1">
+                      <OrientationIcon
+                        orientation={sizeMeta.orientation}
+                        className="h-4 w-4 text-slate-600"
+                      />
+                      <span className="text-[12px] font-semibold text-slate-800">
+                        {sizeMeta.ratio}
+                      </span>
                     </span>
                   </button>
                 </PopoverTrigger>
@@ -764,15 +804,15 @@ export function WorkbenchPanel({
                   apiKey.setVisible(false);
                 }}
               >
-              <DialogTrigger asChild>
-                <button
-                  type="button"
-                  className="flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-700 shadow-sm hover:border-slate-300"
-                >
-                  <ApiKeyIcon className="h-4 w-4 text-slate-700" />
-                  <span>API Key</span>
-                </button>
-              </DialogTrigger>
+                <DialogTrigger asChild>
+                  <button
+                    type="button"
+                    className="flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-700 shadow-sm hover:border-slate-300"
+                  >
+                    <ApiKeyIcon className="h-4 w-4 text-slate-700" />
+                    <span>API Key</span>
+                  </button>
+                </DialogTrigger>
                 <DialogContent
                   aria-describedby={undefined}
                   className="w-[min(92vw,28rem)]"
@@ -864,21 +904,17 @@ export function WorkbenchPanel({
                   </div>
                 </DialogContent>
               </Dialog>
+
+              <button
+                type="button"
+                disabled={generate.loading}
+                onClick={generate.onGenerate}
+                className={generateButtonClass}
+              >
+                {generate.loading ? "生成中..." : "生成"}
+              </button>
             </div>
           </div>
-        </div>
-      </div>
-
-      <div className="flex items-center justify-end gap-3">
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            disabled={generate.loading}
-            onClick={generate.onGenerate}
-            className={generateButtonClass}
-          >
-            {generate.loading ? "生成中..." : "生成"}
-          </button>
         </div>
       </div>
 

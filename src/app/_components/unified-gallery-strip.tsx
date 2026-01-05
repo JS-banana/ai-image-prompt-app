@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import type { GenerationGalleryItem } from "@/lib/data/generations";
 import {
   Dialog,
@@ -17,6 +17,8 @@ const fallbackCover =
 type UnifiedGalleryStripProps = {
   title: string;
   items: GenerationGalleryItem[];
+  layout?: "strip" | "grid";
+  actions?: ReactNode;
   onPreview?: (item: GenerationGalleryItem) => void;
   onEdit?: (item: GenerationGalleryItem) => void;
   onDownload?: (item: GenerationGalleryItem) => void;
@@ -25,6 +27,8 @@ type UnifiedGalleryStripProps = {
 export function UnifiedGalleryStrip({
   title,
   items,
+  layout = "strip",
+  actions,
   onPreview,
   onEdit,
   onDownload,
@@ -40,17 +44,29 @@ export function UnifiedGalleryStrip({
     setActiveItem(item);
   };
 
+  const listClass =
+    layout === "grid"
+      ? "grid gap-4 sm:grid-cols-2 xl:grid-cols-3"
+      : "flex gap-4 overflow-x-auto pb-2";
+  const cardClass =
+    layout === "grid"
+      ? "rounded-[24px] border border-white/70 bg-white/60 p-4 shadow-[0_18px_40px_-30px_rgba(42,42,36,0.6)]"
+      : "min-w-[260px] rounded-[24px] border border-white/70 bg-white/60 p-4 shadow-[0_18px_40px_-30px_rgba(42,42,36,0.6)]";
+
   return (
     <section className="grid gap-4">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <h2 className="font-display text-2xl">{title}</h2>
+        {actions ? (
+          <div className="flex flex-wrap items-center gap-2">{actions}</div>
+        ) : null}
       </div>
       {items.length === 0 ? (
         <div className="rounded-[24px] border border-dashed border-white/70 bg-white/60 p-6 text-sm text-[var(--glint-muted)]">
           暂无生成记录，先生成一张作品吧。
         </div>
       ) : (
-        <div className="flex gap-4 overflow-x-auto pb-2">
+        <div className={listClass}>
           {items.map((item) => {
             const cardCoverStyle = item.imageUrl
               ? { backgroundImage: `url(${item.imageUrl})` }
@@ -59,7 +75,7 @@ export function UnifiedGalleryStrip({
             return (
               <article
                 key={item.resultId || item.requestId}
-                className="min-w-[260px] rounded-[24px] border border-white/70 bg-white/60 p-4 shadow-[0_18px_40px_-30px_rgba(42,42,36,0.6)]"
+                className={cardClass}
               >
                 <div
                   className="h-32 w-full rounded-2xl border border-white/60 bg-cover bg-center"

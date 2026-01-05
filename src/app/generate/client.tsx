@@ -28,6 +28,7 @@ export function GenerateClient({
   prefill,
   variant = "classic",
   showHeader = true,
+  showPromptHeader = true,
 }: GenerateClientProps) {
   const defaultSeedream = models.find((m) => isSeedreamModel(m));
   const initialPrompt = typeof prefill?.prompt === "string" ? prefill.prompt : "";
@@ -291,6 +292,7 @@ export function GenerateClient({
           <div className="grid gap-4 md:grid-cols-[1.15fr,0.85fr]">
             <WorkbenchPanel
               variant={variant}
+              showPromptHeader={showPromptHeader}
               prompt={{
                 value: promptText,
                 onChange: setPromptText,

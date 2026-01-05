@@ -16,6 +16,7 @@ export type GenerateClientProps = {
   prefill?: GenerateClientPrefill;
   variant?: GenerateSurfaceVariant;
   showHeader?: boolean;
+  showPromptHeader?: boolean;
 };
 
 export type GenerationResult = {

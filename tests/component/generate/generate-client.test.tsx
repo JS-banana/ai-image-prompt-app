@@ -39,7 +39,35 @@ beforeEach(() => {
 describe("GenerateClient (MSW)", () => {
   it("shows unified gallery strip", () => {
     render(<GenerateClient prompts={PROMPTS} models={[SEEDREAM_MODEL]} />);
-    expect(screen.getByText(/生成画廊/)).toBeInTheDocument();
+    expect(screen.getByText(/生成历史/)).toBeInTheDocument();
+  });
+
+  it("places generate button next to API Key", () => {
+    render(<GenerateClient prompts={PROMPTS} models={[SEEDREAM_MODEL]} />);
+    const apiKeyButton = screen.getByRole("button", { name: "API Key" });
+    const toolbar = apiKeyButton.closest("div");
+    if (!toolbar) throw new Error("missing API key toolbar");
+    expect(within(toolbar).getByRole("button", { name: "生成" })).toBeInTheDocument();
+  });
+
+  it("places history actions in gallery header", () => {
+    render(<GenerateClient prompts={PROMPTS} models={[SEEDREAM_MODEL]} />);
+    const heading = screen.getByRole("heading", { name: "生成历史" });
+    const headerRow = heading.closest("div");
+    if (!headerRow) throw new Error("missing gallery header");
+    expect(within(headerRow).getByRole("link", { name: "打开库" })).toBeInTheDocument();
+    expect(
+      within(headerRow).getByRole("button", { name: "导出 JSON" }),
+    ).toBeInTheDocument();
+    expect(within(headerRow).getByRole("button", { name: "清空" })).toBeInTheDocument();
+  });
+
+  it("renders the model trigger as an icon-only button", () => {
+    render(<GenerateClient prompts={PROMPTS} models={[SEEDREAM_MODEL]} />);
+    const modelButton = screen.getByRole("button", { name: /模型：Seedream/ });
+    expect(modelButton).toBeInTheDocument();
+    expect(within(modelButton).queryByText(/Seedream/)).not.toBeInTheDocument();
+    expect(modelButton.querySelector("svg, img")).not.toBeNull();
   });
 
   it("requires a non-empty prompt", async () => {
@@ -85,16 +113,14 @@ describe("GenerateClient (MSW)", () => {
     await user.type(screen.getByPlaceholderText(/可直接输入/), "hello world");
     await user.click(screen.getByRole("button", { name: "生成" }));
 
-    const image = await screen.findByAltText("Seedream 生成结果");
-    expect(image).toHaveAttribute("src", "/fixtures/generated.jpg");
-
     const gallerySection = screen
-      .getByRole("heading", { name: "生成画廊" })
+      .getByRole("heading", { name: "生成历史" })
       .closest("section");
     if (!gallerySection) throw new Error("missing gallery section");
     expect(
       await within(gallerySection).findByText("hello world"),
     ).toBeInTheDocument();
+    expect(screen.queryByText("生成结果")).not.toBeInTheDocument();
     expect(receivedBody).toMatchObject({
       prompt: "hello world",
       modelIds: ["seedream-ark"],
@@ -132,14 +158,20 @@ describe("GenerateClient (MSW)", () => {
     expect(screen.getByPlaceholderText(/可直接输入/)).toHaveValue(
       "prefilled prompt",
     );
-    expect(screen.getByRole("button", { name: /2K · 3:4/ })).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /分辨率 2K \| 3:4/ }),
+    ).toBeInTheDocument();
     expect(screen.getByAltText("上传预览")).toHaveAttribute(
       "src",
       "https://example.com/seed.png",
     );
 
     await user.click(screen.getByRole("button", { name: "生成" }));
-    await screen.findByAltText("Seedream 生成结果");
+    const gallerySection = screen
+      .getByRole("heading", { name: "生成历史" })
+      .closest("section");
+    if (!gallerySection) throw new Error("missing gallery section");
+    await within(gallerySection).findByText("prefilled prompt");
 
     expect(receivedBody).toMatchObject({
       prompt: "prefilled prompt",
@@ -181,7 +213,9 @@ describe("GenerateClient (MSW)", () => {
     const user = userEvent.setup();
     render(<GenerateClient prompts={PROMPTS} models={[SEEDREAM_MODEL]} />);
 
-    await user.click(screen.getByRole("button", { name: /2K · 1:1/ }));
+    await user.click(
+      screen.getByRole("button", { name: /分辨率 2K \| 1:1/ }),
+    );
     await user.clear(screen.getByPlaceholderText("宽度"));
     await user.type(screen.getByPlaceholderText("宽度"), "100");
     await user.clear(screen.getByPlaceholderText("高度"));
@@ -225,7 +259,9 @@ describe("GenerateClient (MSW)", () => {
     const user = userEvent.setup();
     render(<GenerateClient prompts={PROMPTS} models={[SEEDREAM_MODEL]} />);
 
-    await user.click(screen.getByRole("button", { name: /2K · 1:1/ }));
+    await user.click(
+      screen.getByRole("button", { name: /分辨率 2K \| 1:1/ }),
+    );
     await user.clear(screen.getByPlaceholderText("宽度"));
     await user.type(screen.getByPlaceholderText("宽度"), "5000");
     await user.click(screen.getByRole("button", { name: "使用当前尺寸" }));
@@ -269,7 +305,7 @@ describe("GenerateClient (MSW)", () => {
     await user.type(screen.getByPlaceholderText(/可直接输入/), "hello world");
     await user.click(screen.getByRole("button", { name: "生成" }));
     const gallerySection = screen
-      .getByRole("heading", { name: "生成画廊" })
+      .getByRole("heading", { name: "生成历史" })
       .closest("section");
     if (!gallerySection) throw new Error("missing gallery section");
     await within(gallerySection).findByText("hello world");
@@ -320,7 +356,7 @@ describe("GenerateClient (MSW)", () => {
     await user.type(screen.getByPlaceholderText(/可直接输入/), "hello world");
     await user.click(screen.getByRole("button", { name: "生成" }));
     const gallerySection = screen
-      .getByRole("heading", { name: "生成画廊" })
+      .getByRole("heading", { name: "生成历史" })
       .closest("section");
     if (!gallerySection) throw new Error("missing gallery section");
     await within(gallerySection).findByText("hello world");
@@ -396,11 +432,11 @@ describe("GenerateClient (MSW)", () => {
     );
 
     await user.click(screen.getByRole("button", { name: "生成" }));
-    await screen.findByAltText("Seedream 生成结果");
-
-    expect(receivedBody).toMatchObject({
-      prompt: "from history",
-      image: ["https://example.com/seed.png"],
+    await waitFor(() => {
+      expect(receivedBody).toMatchObject({
+        prompt: "from history",
+        image: ["https://example.com/seed.png"],
+      });
     });
   });
 
