@@ -6,6 +6,8 @@ const globalForPrisma = globalThis as unknown as {
   prisma?: PrismaClient;
 };
 
+const DEFAULT_SQLITE_URL = "file:./prisma/dev.db";
+
 const findProjectRoot = () => {
   let dir = process.cwd();
   for (let depth = 0; depth < 8; depth += 1) {
@@ -24,6 +26,17 @@ const findProjectRoot = () => {
   return process.cwd();
 };
 
+const normalizeSqliteUrl = (url: string) => {
+  if (!url) return "";
+  if (url === "file:./prisma/prisma/dev.db") {
+    return DEFAULT_SQLITE_URL;
+  }
+  if (url.startsWith("file:./prisma/prisma/")) {
+    return `file:./prisma/${url.slice("file:./prisma/prisma/".length)}`;
+  }
+  return url;
+};
+
 const resolveSqlitePath = (rawPath: string) => {
   if (rawPath.startsWith("/")) return rawPath;
   const root = findProjectRoot();
@@ -31,7 +44,11 @@ const resolveSqlitePath = (rawPath: string) => {
 };
 
 const ensureSqliteDbReady = () => {
-  const url = process.env.DATABASE_URL ?? "";
+  const normalizedUrl = normalizeSqliteUrl(process.env.DATABASE_URL ?? "");
+  const url = normalizedUrl || DEFAULT_SQLITE_URL;
+
+  process.env.DATABASE_URL = url;
+
   if (!url.startsWith("file:")) return;
   if (url.includes("/tmp/")) return;
 

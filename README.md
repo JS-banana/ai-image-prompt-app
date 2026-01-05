@@ -13,7 +13,7 @@
 1. 复制 `.env.example` 为 `.env.local` 并填写：
 
 ```
-DATABASE_URL="file:./prisma/prisma/dev.db"
+DATABASE_URL="file:./prisma/dev.db"
 volcengine_api_key="YOUR_ARK_API_KEY"
 # 可选端点：SEEDREAM4_ENDPOINT / DEEPSEEK_ENDPOINT
 ```
@@ -39,6 +39,8 @@ pnpm format          # Prettier write
 pnpm typecheck       # TS 检查
 pnpm db:seed         # 写入示例 Prompt/Model
 pnpm db:import:banana  # 导入 banana prompts
+pnpm prepare:db      # 迁移 + 种子（SQLite 本地文件）
+pnpm vercel-build    # Vercel 专用：prepare:db + next build --webpack
 ```
 
 ## 技术栈
