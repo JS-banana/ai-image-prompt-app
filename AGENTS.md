@@ -28,7 +28,7 @@
 ## 环境与配置
 
 - 必需环境变量：`volcengine_api_key`（兼容 `SEEDREAM_API_KEY`）。
-- 本地数据库：Prisma SQLite（`DATABASE_URL` 默认 dev.db）。
+- 本地数据库：Prisma SQLite（推荐 `DATABASE_URL="file:./dev.db"`，对应文件 `prisma/dev.db`）。
 
 ## 运行与验证
 
@@ -39,6 +39,7 @@
 - Coverage：`pnpm test:coverage`
 - Build：`pnpm build`
 - 种子/导入：`pnpm db:seed`，`pnpm db:import:banana`
+- 重新生成本地 SQLite（会生成/刷新 `prisma/dev.db`）：`pnpm prisma migrate deploy && pnpm db:seed`
 
 ## 测试与 CI（当前进度）
 
@@ -59,6 +60,7 @@
 - 目前仅 Seedream 接口可用，其它模型尚未接入；UI 以单模型模式呈现。
 - 分辨率低于 3,686,400 像素会被前端拦截；若自定义需符合格式如 `2048x2048`。
 - 设计主题暂保留浅色；如要切换深色/主题，请另行规划。
+- Vercel 运行时会将 `prisma/dev.db` 拷贝为 `/tmp/ai-image-app.db` 使用；请确保 `prisma/dev.db` 已提交且非空，否则会在运行时生成空库导致 `P2021`。
 
 ## 待办/下一步建议
 

@@ -28,6 +28,9 @@ const findProjectRoot = () => {
 
 const normalizeSqliteUrl = (url: string) => {
   if (!url) return "";
+  if (url === "file:./dev.db") {
+    return DEFAULT_SQLITE_URL;
+  }
   if (url === "file:./prisma/prisma/dev.db") {
     return DEFAULT_SQLITE_URL;
   }
