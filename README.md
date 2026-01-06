@@ -13,7 +13,7 @@
 1. 复制 `.env.example` 为 `.env.local` 并填写：
 
 ```
-DATABASE_URL="file:./prisma/dev.db"
+DATABASE_URL="file:./dev.db"
 volcengine_api_key="YOUR_ARK_API_KEY"
 # 可选端点：SEEDREAM4_ENDPOINT / DEEPSEEK_ENDPOINT
 ```

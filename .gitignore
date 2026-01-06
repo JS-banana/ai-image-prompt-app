@@ -51,4 +51,4 @@ next-env.d.ts
 .env*.local
 
 # prisma local db
-prisma/prisma/dev.db
+# 注意：prisma/dev.db 作为 Vercel 运行时复制源，需要保留在仓库中
